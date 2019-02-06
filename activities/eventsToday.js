@@ -2,6 +2,7 @@
 
 const moment = require('moment');
 const api = require('./common/api');
+const utils = require('./common/utils');
 
 const urlRegex = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
 
@@ -59,17 +60,7 @@ module.exports = async function (activity) {
             };
         }
     } catch (error) {
-        let m = error.message;
-
-        if (error.stack) {
-            m = m + ': ' + error.stack;
-        }
-
-        activity.Response.ErrorCode = (error.response && error.response.statusCode) || 500;
-
-        activity.Response.Data = {
-            ErrorText: m
-        };
+        utils.handleError(error, activity);
     }
 };
 

@@ -41,7 +41,7 @@ app
     .use(router.routes())
     .use(router.allowedMethods())
     .on('error', (err) => {
-        logger.error(JSON.stringify(err, null, 4));
+        logger.error(err);
     })
     .listen(PORT);
 

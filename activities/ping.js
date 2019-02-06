@@ -1,6 +1,7 @@
 'use strict';
 
 const api = require('./common/api');
+const utils = require('./common/utils');
 
 module.exports = async function (activity) {
     try {
@@ -12,17 +13,7 @@ module.exports = async function (activity) {
             success: response && response.statusCode === 200
         };
     } catch (error) {
-        const response = {
-            success: false
-        };
-
-        let m = error.message;
-
-        if (error.stack) {
-            m = m + ': ' + error.stack;
-        }
-
-        response.ErrorText = m;
-        activity.Response.Data = response;
+        utils.handleError(error, activity);
+        activity.Response.Data.success = false;
     }
 };

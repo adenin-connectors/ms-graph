@@ -1,6 +1,7 @@
 'use strict';
 
 const api = require('./common/api');
+const utils = require('./common/utils');
 
 const dateAscending = (a, b) => {
     a = new Date(a.start.dateTime);
@@ -60,15 +61,6 @@ module.exports = async (activity) => {
             };
         }
     } catch (error) {
-        let m = error.message;
-
-        if (error.stack) {
-            m = m + ': ' + error.stack;
-        }
-
-        activity.Response.ErrorCode = (error.response && error.response.statusCode) || 500;
-        activity.Response.Data = {
-            ErrorText: m
-        };
+        utils.handleError(error, activity);
     }
 };
