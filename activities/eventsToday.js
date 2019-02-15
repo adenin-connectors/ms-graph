@@ -1,8 +1,8 @@
 'use strict';
 
+const handleError = require('@adenin/cf-activity').handleError;
 const moment = require('moment');
 const api = require('./common/api');
-const utils = require('./common/utils');
 
 const urlRegex = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
 
@@ -60,7 +60,7 @@ module.exports = async function (activity) {
             };
         }
     } catch (error) {
-        utils.handleError(error, activity);
+        handleError(error, activity);
     }
 };
 

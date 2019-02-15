@@ -1,7 +1,7 @@
 'use strict';
 
+const handleError = require('@adenin/cf-activity').handleError;
 const api = require('./common/api');
-const utils = require('./common/utils');
 
 const dateAscending = (a, b) => {
     a = new Date(a.start.dateTime);
@@ -61,6 +61,6 @@ module.exports = async (activity) => {
             };
         }
     } catch (error) {
-        utils.handleError(error, activity);
+        handleError(error, activity);
     }
 };

@@ -1,7 +1,7 @@
 'use strict';
 
+const handleError = require('@adenin/cf-activity').handleError;
 const api = require('./common/api');
-const utils = require('./common/utils');
 
 module.exports = async (activity) => {
     try {
@@ -53,7 +53,7 @@ module.exports = async (activity) => {
             };
         }
     } catch (error) {
-        utils.handleError(error, activity);
+        handleError(error, activity);
     }
 };
 

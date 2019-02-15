@@ -23,6 +23,6 @@
             "name": "Attach to Process",
             "address": "localhost",
             "port": 9229
-        }    
+        }   
     ]
 }

@@ -1,7 +1,7 @@
 'use strict';
 
+const handleError = require('@adenin/cf-activity').handleError;
 const api = require('./common/api');
-const utils = require('./common/utils');
 
 module.exports = async function (activity) {
     try {
@@ -13,7 +13,7 @@ module.exports = async function (activity) {
             success: response && response.statusCode === 200
         };
     } catch (error) {
-        utils.handleError(error, activity);
+        handleError(error, activity);
         activity.Response.Data.success = false;
     }
 };
