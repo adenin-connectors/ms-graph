@@ -1,2 +1,1 @@
-Microsoft Graph Connector
-===
+# ms-graph-cloud-function
