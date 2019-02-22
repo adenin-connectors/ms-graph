@@ -1,6 +1,6 @@
 'use strict';
 
-const handleError = require('@adenin/cf-activity').handleError;
+const {handleError} = require('@adenin/cf-activity');
 const moment = require('moment');
 const api = require('./common/api');
 
@@ -17,7 +17,7 @@ module.exports = async function (activity) {
     try {
         api.initialize(activity);
 
-        const response = await api('/me/events');
+        const response = await api('/v1.0/me/events');
 
         if (response.statusCode === 200 && response.body.value && response.body.value.length > 0) {
             const today = new Date();
@@ -71,7 +71,7 @@ async function resolveRecurrence(eventId) {
         const start = (new Date(today.setHours(0, 0, 0, 0))).toISOString();
         const end = (new Date(today.setHours(23, 59, 0, 0))).toISOString();
 
-        const endpoint = '/me/events/' + eventId + '/instances?startDateTime=' + start + '&endDateTime=' + end;
+        const endpoint = '/v1.0/me/events/' + eventId + '/instances?startDateTime=' + start + '&endDateTime=' + end;
 
         const response = await api(endpoint);
 

@@ -1,13 +1,13 @@
 'use strict';
 
-const handleError = require('@adenin/cf-activity').handleError;
+const {handleError} = require('@adenin/cf-activity');
 const api = require('./common/api');
 
 module.exports = async (activity) => {
     try {
         api.initialize(activity);
 
-        const response = await api('/me/memberOf');
+        const response = await api('/v1.0/me/memberOf');
 
         if (response.statusCode === 200 && response.body.value && response.body.value.length > 0) {
             activity.Response.Data.items = [];

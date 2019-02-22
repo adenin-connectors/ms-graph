@@ -1,6 +1,6 @@
 'use strict';
 
-const handleError = require('@adenin/cf-activity').handleError;
+const {handleError} = require('@adenin/cf-activity');
 const api = require('./common/api');
 
 module.exports = async (activity) => {
@@ -26,7 +26,7 @@ module.exports = async (activity) => {
             pageSize = 20;
         }
 
-        const response = await api('/me/people?$search=' + activity.Request.Query.query);
+        const response = await api('/v1.0/me/people?$search=' + activity.Request.Query.query);
 
         if (response.statusCode === 200 && response.body.value && response.body.value.length > 0) {
             activity.Response.Data._action = action;

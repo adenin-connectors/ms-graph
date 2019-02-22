@@ -1,6 +1,6 @@
 'use strict';
 
-const handleError = require('@adenin/cf-activity').handleError;
+const {handleError} = require('@adenin/cf-activity');
 const api = require('./common/api');
 
 const dateAscending = (a, b) => {
@@ -14,8 +14,8 @@ module.exports = async (activity) => {
     try {
         api.initialize(activity);
 
-        const people = await api('/me/people?$search=' + activity.Request.Query.query);
-        const events = await api('/me/events');
+        const people = await api('/v1.0/me/people?$search=' + activity.Request.Query.query);
+        const events = await api('/v1.0/me/events');
 
         const isPeople = (people.statusCode === 200) && people.body.value && (people.body.value.length > 0);
         const isEvents = (events.statusCode === 200) && events.body.value && (events.body.value.length > 0);

@@ -4,7 +4,7 @@ const got = require('got');
 const HttpAgent = require('agentkeepalive');
 const HttpsAgent = HttpAgent.HttpsAgent;
 
-const endpoint = 'https://graph.microsoft.com/v1.0';
+const endpoint = 'https://graph.microsoft.com';
 
 let _activity = null;
 
