@@ -49,3 +49,6 @@ Scopes:
 - ScopeName: sites.read.all
   ScopeDescription: sites.read.all
   IsDefault: true
+- ScopeName: Tasks.ReadWrite
+  ScopeDescription: Update Outlook Tasks
+  IsDefault: true

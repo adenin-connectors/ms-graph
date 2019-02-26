@@ -29,7 +29,10 @@ module.exports = async (activity) => {
       pageSize = 20;
     }
 
-    const response = await api('/v1.0/me/people?$search=' + activity.Request.Query.query);
+    var url = '/v1.0/me/people'
+    if(activity.Request.Query.query) url = url + '$search=' + activity.Request.Query.query;
+
+    const response = await api(url);
 
     if (response.statusCode === 200 && response.body.value && response.body.value.length > 0) {
       activity.Response.Data._action = action;

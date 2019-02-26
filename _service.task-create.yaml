@@ -1,0 +1,8 @@
+ServiceName: 'task-create'
+InterfaceName: 'create'
+Description: 'Create Outlook Task'
+APIDoc: ''
+Interfaces: ''
+RequiredScopes: ''
+AdditionalParameters:
+Method: ''
