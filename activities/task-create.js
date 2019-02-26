@@ -22,7 +22,7 @@ module.exports = async (activity) => {
 
             case "create":
             case "submit":
-                const form = getObjPath(activity.Request, "Data.model.form");
+                const form = _action.form;
                 var response = await api.post("/beta/me/outlook/tasks", {
                     json: true,
                     body: {
