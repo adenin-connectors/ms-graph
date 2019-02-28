@@ -52,3 +52,6 @@ Scopes:
 - ScopeName: Tasks.ReadWrite
   ScopeDescription: Update Outlook Tasks
   IsDefault: true
+- ScopeName: Calendars.ReadWrite.Shared
+  ScopeDescription: Read and write to your and shared Outlook calendars
+  IsDefault: true
