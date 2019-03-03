@@ -1,8 +1,7 @@
 'use strict';
 
-const {
-    handleError
-} = require('@adenin/cf-activity');
+const cfActivity = require('@adenin/cf-activity');
+const querystring = require('querystring');
 const api = require('./common/api');
 
 module.exports = async (activity) => {
@@ -42,7 +41,7 @@ module.exports = async (activity) => {
 
 
         var url = '/v1.0/me/people'
-        if (activity.Request.Query.query) url = url + '?$search=' + activity.Request.Query.query;
+        if (activity.Request.Query.query) url = url + '?$search=' +  querystring.escape(activity.Request.Query.query);
 
         const response = await api(url);
 
@@ -66,7 +65,7 @@ module.exports = async (activity) => {
             };
         }
     } catch (error) {
-        handleError(error, activity);
+      cfActivity.handleError(activity, error);
     }
 };
 

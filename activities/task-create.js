@@ -34,6 +34,8 @@ module.exports = async (activity) => {
                     }
                 });
 
+                if(!cfActivity.isResponseOk(activity, response, [200, 201] )) return;
+
                 var comment = "Task created";
                 data = getObjPath(activity.Request, "Data.model");
                 data._action = {
