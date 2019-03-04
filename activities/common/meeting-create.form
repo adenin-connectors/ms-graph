@@ -1,0 +1,86 @@
+$type: form
+properties:
+  subject:
+    type: string
+    title: Subject
+    name: subject
+    required: !!bool true
+  attendees:
+    type: string
+    title: Attendees
+    xtype: lookup
+    name: attendees
+    maxItems: !!int 19
+    url: /api/adenin.GateKeeper.Connector/MSGraph/people
+    required: !!bool true
+  starttime:
+    type: string
+    title: Start Time
+    xtype: datetime
+    name: starttime
+    required: !!bool true
+  daterange:
+    type: daterange
+    title: Daterange for Auto Find
+    name: daterange
+    required: !!bool true
+    hide: !!bool true
+  duration:
+    type: string
+    title: Duration
+    xtype: enum
+    name: duration
+    xvaluelist:
+      - value: PT15M
+        title: 15 min
+      - value: PT30M
+        title: 30 min
+      - value: PT45M
+        title: 45 min
+      - value: PT1H
+        title: 60 min
+      - value: PT1H30M
+        title: 90 min
+      - value: PT2H
+        title: 2 hrs
+      - value: PT3H
+        title: 3 hrs
+      - value: PT4H
+        title: 4 hrs
+      - value: PT6H
+        title: 6 hrs
+      - value: PT8H
+        title: 8 hrs
+    xgridcols: 3
+    default: PT30M
+  auto:
+    type: boolean
+    title: Auto Find Free Time
+    xtype: toggle
+    default: false
+    name: auto
+    xgridcols: 3
+  description:
+    type: string
+    title: Description
+    xtype: textarea
+    name: description
+rules:
+  - caption: 'Rule #1'
+    position: !!int 1
+    rule:
+      conditions:
+        kind: all
+        conditions:
+          - name: auto
+            operator: equalTo
+            compareTo: text
+            value: !!bool true
+      actions:
+        - actionName: setFieldState
+          fieldName: daterange
+          state: required
+        - actionName: setFieldState
+          fieldName: starttime
+          state: hidden
+$meta: {}

@@ -1,0 +1,4 @@
+ServiceName: listUsed
+InterfaceName: items
+Description: listUsed
+Interfaces: 'pagination'

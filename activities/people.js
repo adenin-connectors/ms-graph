@@ -1,6 +1,7 @@
 'use strict';
 
-const handleError = require('@adenin/cf-activity').handleError;
+const cfActivity = require('@adenin/cf-activity');
+const querystring = require('querystring');
 const api = require('./common/api');
 
 module.exports = async (activity) => {
@@ -11,8 +12,11 @@ module.exports = async (activity) => {
         let page = parseInt(activity.Request.Query.page, 10) || 1;
         let pageSize = parseInt(activity.Request.Query.pageSize, 10) || 20;
 
-        if (activity.Request.Data && activity.Request.Data.args &&
-            activity.Request.Data.args.atAgentAction === 'nextpage') {
+        if (
+            activity.Request.Data &&
+            activity.Request.Data.args &&
+            activity.Request.Data.args.atAgentAction === 'nextpage'
+        ) {
             page = parseInt(activity.Request.Data.args._page, 10) || 2;
             pageSize = parseInt(activity.Request.Data.args._pageSize, 10) || 20;
             action = 'nextpage';
@@ -26,14 +30,22 @@ module.exports = async (activity) => {
             pageSize = 20;
         }
 
-        const response = await api('/me/people?$search=' + activity.Request.Query.query);
+        activity.Response.Data._action = action;
+        activity.Response.Data._page = page;
+        activity.Response.Data._pageSize = pageSize;
+
+        activity.Response.Data.items = [];
+
+        // return empty result if no search term was provided
+        if (!activity.Request.Query.query) return;
+
+
+        var url = '/v1.0/me/people'
+        if (activity.Request.Query.query) url = url + '?$search=' +  querystring.escape(activity.Request.Query.query);
+
+        const response = await api(url);
 
         if (response.statusCode === 200 && response.body.value && response.body.value.length > 0) {
-            activity.Response.Data._action = action;
-            activity.Response.Data._page = page;
-            activity.Response.Data._pageSize = pageSize;
-
-            activity.Response.Data.items = [];
 
             const startItem = Math.max(page - 1, 0) * pageSize;
             let endItem = startItem + pageSize;
@@ -53,14 +65,23 @@ module.exports = async (activity) => {
             };
         }
     } catch (error) {
-        handleError(error, activity);
+      cfActivity.handleError(activity, error);
     }
 };
 
 function convertItem(_item) {
-    return {
+    var r = {
         id: _item.id,
         name: _item.displayName,
+        title: _item.displayName,
         email: _item.userPrincipalName
     };
+
+    if (!_item.userPrincipalName) {
+        if (_item.scoredEmailAddresses && _item.scoredEmailAddresses.length > 0) r.email = _item.scoredEmailAddresses[0].address;
+    }
+
+    if(r.email) r.id = r.email;
+
+    return r;
 }

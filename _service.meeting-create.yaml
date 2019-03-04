@@ -1,0 +1,8 @@
+ServiceName: 'meeting-create'
+InterfaceName: 'create'
+Description: 'Schedule Outlook Meeting'
+APIDoc: ''
+Interfaces: ''
+RequiredScopes: ''
+AdditionalParameters:
+Method: ''
