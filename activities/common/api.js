@@ -63,8 +63,49 @@ api.initialize = function (activity) {
 
 for (const x of helpers) {
     const method = x.toUpperCase();
-    api[x] = (url, opts) => api(url, Object.assign({}, opts, {method}));
-    api.stream[x] = (url, opts) => api.stream(url, Object.assign({}, opts, {method}));
+    api[x] = (url, opts) => api(url, Object.assign({}, opts, {
+        method
+    }));
+    api.stream[x] = (url, opts) => api.stream(url, Object.assign({}, opts, {
+        method
+    }));
 }
+
+api.handleError = (activity, error) => {
+
+    if(error.response && error.response.statusCode == 400) {
+      
+      // MSGraph might return a 'nice' error message 
+      // if available use that instead of generic error message
+      if(error.body.error && error.body.error.message) {
+        activity.Response.ErrorCode = error.response.statusCode;
+        activity.Response.Data = {
+            ErrorText: error.body.error.message
+        };
+        return;
+      }
+    }
+
+    // if OAuth2 tokens are used status 401 should be mapped to 461 auth required  
+    authRequiresStatusCodes = [401];
+
+    if (error.response && error.response.statusCode && authRequiresStatusCodes.indexOf(error.response.statusCode) >= 0) {
+        error.response.statusCode = 461;
+    } else {
+        logger.error(error);
+    }
+
+    let m = error.message;
+
+    if (error.stack) {
+        m = m + ': ' + error.stack;
+    }
+
+    activity.Response.ErrorCode = (error.response && error.response.statusCode) || 500;
+    activity.Response.Data = {
+        ErrorText: m
+    };
+};
+
 
 module.exports = api;

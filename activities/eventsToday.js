@@ -60,7 +60,7 @@ module.exports = async function (activity) {
       };
     }
   } catch (error) {
-    handleError(error, activity);
+    api.handleError(activity, error);
   }
 };
 

@@ -26,7 +26,7 @@ module.exports = async function (activity) {
     activity.Response.Data._page = page;
     activity.Response.Data._pageSize = pageSize;
   } catch (error) {
-    handleError(error, activity);
+    api.handleError(activity, error);
   }
 
   function configureRange() {
