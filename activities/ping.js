@@ -13,7 +13,7 @@ module.exports = async function (activity) {
       success: response && response.statusCode === 200
     };
   } catch (error) {
-    handleError(error, activity);
+    handleError(activity, error);
     activity.Response.Data.success = false;
   }
 };
