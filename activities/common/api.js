@@ -1,5 +1,5 @@
 'use strict';
-
+const logger = require('@adenin/cf-logger');
 const got = require('got');
 const HttpAgent = require('agentkeepalive');
 const HttpsAgent = HttpAgent.HttpsAgent;
@@ -87,7 +87,7 @@ api.handleError = (activity, error) => {
     }
 
     // if OAuth2 tokens are used status 401 should be mapped to 461 auth required  
-    authRequiresStatusCodes = [401];
+    var authRequiresStatusCodes = [401];
 
     if (error.response && error.response.statusCode && authRequiresStatusCodes.indexOf(error.response.statusCode) >= 0) {
         error.response.statusCode = 461;

@@ -1,0 +1,8 @@
+ServiceName: 'myevents'
+InterfaceName: 'items'
+Description: 'My Outlook Calendar'
+APIDoc: ''
+Interfaces: 'daterange'
+RequiredScopes: ''
+AdditionalParameters:
+Method: ''
