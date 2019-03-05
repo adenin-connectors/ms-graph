@@ -164,7 +164,7 @@ module.exports = async (activity) => {
 
     } catch (error) {
         // handle generic exception
-        cfActivity.handleError(activity, error);
+        api.handleError(activity, error);
     }
 
     function getObjPath(obj, path) {

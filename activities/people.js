@@ -41,7 +41,11 @@ module.exports = async (activity) => {
 
 
         var url = '/v1.0/me/people'
-        if (activity.Request.Query.query) url = url + '?$search=' +  querystring.escape(activity.Request.Query.query);
+        if (activity.Request.Query.query) {
+            // replace special characters 
+            var search = activity.Request.Query.query.replace(/[`~!#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, ' ').trim();            
+            if (search) url = url + '?$search=' + querystring.escape(search);
+        }
 
         const response = await api(url);
 
@@ -65,7 +69,7 @@ module.exports = async (activity) => {
             };
         }
     } catch (error) {
-      cfActivity.handleError(activity, error);
+        api.handleError(activity, error);
     }
 };
 
@@ -81,7 +85,7 @@ function convertItem(_item) {
         if (_item.scoredEmailAddresses && _item.scoredEmailAddresses.length > 0) r.email = _item.scoredEmailAddresses[0].address;
     }
 
-    if(r.email) r.id = r.email;
+    if (r.email) r.id = r.email;
 
     return r;
 }
