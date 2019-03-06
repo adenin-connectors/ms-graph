@@ -1,0 +1,3 @@
+InterfaceName: info
+Description: Show available meeting time slots
+Interfaces: 'search'
