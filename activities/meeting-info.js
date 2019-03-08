@@ -75,7 +75,7 @@ module.exports = async (activity) => {
                 data.meetingTimeSuggestions = response.body.meetingTimeSuggestions;
 
                 break;
-                
+
 
             default:
 
@@ -95,33 +95,48 @@ module.exports = async (activity) => {
                     data.form.subject = activity.Request.Query.query;
                 }
 
-                break;
+                if (!data._card) data._card = {};
+                data._card.actionList = [];
+                var action = {
+                    id: "find",
+                    label: "Find Meeting Time",
+                    settings: {
+                        actionType: "api",
+                        buttonType: 1
+                    }
+                };
+
+                data._card.actionList.push(action);
         }
 
-        // copy response data
-        activity.Response.Data = data;
 
-
-    } catch (error) {
-        // handle generic exception
-        api.handleError(activity, error);
+        break;
     }
 
-    function getObjPath(obj, path) {
+    // copy response data
+    activity.Response.Data = data;
 
-        if (!path) return obj;
-        if (!obj) return null;
 
-        var paths = path.split('.'),
-            current = obj;
+} catch (error) {
+    // handle generic exception
+    api.handleError(activity, error);
+}
 
-        for (var i = 0; i < paths.length; ++i) {
-            if (current[paths[i]] == undefined) {
-                return undefined;
-            } else {
-                current = current[paths[i]];
-            }
+function getObjPath(obj, path) {
+
+    if (!path) return obj;
+    if (!obj) return null;
+
+    var paths = path.split('.'),
+        current = obj;
+
+    for (var i = 0; i < paths.length; ++i) {
+        if (current[paths[i]] == undefined) {
+            return undefined;
+        } else {
+            current = current[paths[i]];
         }
-        return current;
     }
+    return current;
+}
 };

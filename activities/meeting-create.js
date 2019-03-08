@@ -4,14 +4,16 @@ const path = require('path');
 const api = require('./common/api');
 const yaml = require('js-yaml');
 const fs = require('fs');
-const logger = require('@adenin/cf-logger');
-const cfActivity = require('@adenin/cf-activity');
+const moment = require('moment');
+
 
 module.exports = async (activity) => {
 
     try {
         api.initialize(activity);
         var data = {};
+        var form = {};
+        var body = {};
 
         // extract _action from Request
         var _action = getObjPath(activity.Request, "Data.model._action");
@@ -21,58 +23,70 @@ module.exports = async (activity) => {
             _action = {};
         }
 
+        if (activity.Request.Path) {
+
+            form = _action.form;
+
+            // get attendees[]
+            var attendees = _action.form.attendees.split(",");
+
+            // ensure that current user is part of attendees
+            if (activity.Context.UserEmail && attendees.indexOf(activity.Context.UserEmail) < 0) attendees.push(activity.Context.UserEmail);
+
+            var meetingAttendees = [];
+
+            attendees.forEach(element => {
+                meetingAttendees.push({
+                    emailAddress: {
+                        address: element
+                    },
+                    "type": "Required"
+                });
+            });
+        }
+
+
         switch (activity.Request.Path) {
+            
+            case "find": // --- find meeting times ----------
 
-            case "create":
-            case "submit":
+                body.attendees = meetingAttendees;
+                body.meetingDuration = form.duration;
 
-                const form = _action.form;
-                var body = {};
-
-                // get attendees[]
-                var attendees = _action.form.attendees.split(",");
-
-                // ensure that current user is part of attendees
-                if (attendees.indexOf(activity.Context.UserEmail) < 0) attendees.push(activity.Context.UserEmail);
-
-                var meetingAttendees = [];
-
-                attendees.forEach(element => {
-                    meetingAttendees.push({
-                        emailAddress: {
-                            address: element
+                var timeslots = form.daterange.split("/");
+                body.timeConstraint = {
+                    "timeslots": [{
+                        "start": {
+                            "dateTime": timeslots[0] + "T00:00:00Z",
+                            "timeZone": "UTC"
                         },
-                        "type": "Required"
-                    });
+                        "end": {
+                            "dateTime": timeslots[1] + "T23:59:59Z",
+                            "timeZone": "UTC"
+                        }
+                    }]
+                };
+
+                var response = await api.post("/v1.0/me/findMeetingTimes", {
+                    json: true,
+                    body: body
                 });
 
 
-                // auto schedule ?
-                if (form.auto != "2") {
+                data._actionList = [{
+                    id: "find",
+                    label: "Find Meeting Time",
+                    settings: {
+                        actionType: "api"
+                    }
+                }, {
+                    id: "schedule",
+                    label: "Schedule Meeting",
+                    settings: {
+                        actionType: "a"
+                    }
+                }];
 
-                    body.attendees = meetingAttendees;
-                    body.meetingDuration = form.duration;
-
-                    var timeslots = form.daterange.split("/");
-                    body.timeConstraint = {
-                        "timeslots": [{
-                            "start": {
-                                "dateTime": timeslots[0] + "T00:00:00Z",
-                                "timeZone": "UTC"
-                            },
-                            "end": {
-                                "dateTime": timeslots[1] + "T23:59:59Z",
-                                "timeZone": "UTC"
-                            }
-                        }]
-                    };
-
-                    var response = await api.post("/v1.0/me/findMeetingTimes", {
-                        json: true,
-                        body: body
-                    });
-
-                }
 
                 // return failure when API returns emptySuggestionsReason
                 var comment = response.body.emptySuggestionsReason;
@@ -87,8 +101,36 @@ module.exports = async (activity) => {
                     break;
                 }
 
+                var schema = readSchema(activity);
+
+                schema.properties.meetingtimes.xvaluelist = [];
+
+                // convert returned suggestions
+                response.body.meetingTimeSuggestions.forEach(meetingTimeSuggestion => {
+                    schema.properties.meetingtimes.xvaluelist.push({
+                        //value: meetingTimeSuggestion.meetingTimeSlot.start.dateTime + "|" + meetingTimeSuggestion.meetingTimeSlot.end.dateTime,
+                        value: JSON.stringify(meetingTimeSuggestion.meetingTimeSlot),
+                        title: moment(meetingTimeSuggestion.meetingTimeSlot.start.dateTime).format('lll')
+                    });
+                });
+
+                schema.properties.meetingtimes.hide = schema.properties.meetingtimes.xvaluelist.length == 0;
+                if (schema.properties.meetingtimes.xvaluelist.length > 0) form.meetingtimes = schema.properties.meetingtimes.xvaluelist[0].value;
+
+                // return form schema & form value
+                data._formSchema = schema;
+                data.form = form;
+
+                break;
+
+
+            case "schedule": // --- schedule meeting ----------
+
                 // use suggested timeslot
-                var timeslot = response.body.meetingTimeSuggestions[0].meetingTimeSlot;
+                var timeslot = JSON.parse(_action.form.meetingtimes);
+
+                // get attendees[]
+                var attendees = _action.form.attendees.split(",");
 
                 body = {
                     subject: form.subject,
@@ -119,14 +161,12 @@ module.exports = async (activity) => {
 
 
             default:
-                // initialize form subject with query parameter (if provided)
-                var fname = activity.Context.ScriptFolder + path.sep + '/common/meeting-create.form';
-                var schema = yaml.safeLoad(fs.readFileSync(fname, 'utf8'));
 
-                // provide lookup url for attendees 
-                schema.properties.attendees.url = activity.Context.connector.baseurl + "/people";
-                schema.properties.daterange.hide = false;
-                schema.properties.starttime.hide = true;
+                var schema = readSchema(activity);
+                schema.properties.meetingtimes.hide = true;
+
+                // return form schema
+                data._formSchema = schema;
 
                 // initialize start date to next hour
                 var d = new Date();
@@ -142,8 +182,6 @@ module.exports = async (activity) => {
                 dtn.setDate(dtn.getDate() + 30);
 
 
-                // return form schema
-                data.formSchema = schema;
 
                 // set form default value
                 data.form = {};
@@ -151,9 +189,21 @@ module.exports = async (activity) => {
                 data.form.auto = '1';
                 data.form.daterange = dt.toISOString().substring(0, 10) + "/" + dtn.toISOString().substring(0, 10);
 
+
+                // initialize form subject with query parameter (if provided)
                 if (activity.Request.Query && activity.Request.Query.query) {
                     data.form.subject = activity.Request.Query.query;
                 }
+
+                // initialize actions                
+                data._actionList = [{
+                    id: "find",
+                    label: "Find Meeting Time",
+                    settings: {
+                        actionType: "api"
+                    }
+                }]
+
 
                 break;
         }
@@ -165,6 +215,18 @@ module.exports = async (activity) => {
     } catch (error) {
         // handle generic exception
         api.handleError(activity, error);
+    }
+
+
+    function readSchema(activity) {
+
+        var fname = activity.Context.ScriptFolder + path.sep + '/common/meeting-create.form';
+        var schema = yaml.safeLoad(fs.readFileSync(fname, 'utf8'));
+
+        // provide lookup url for attendees 
+        schema.properties.attendees.url = activity.Context.connector.baseurl + "/people";
+
+        return schema;
     }
 
     function getObjPath(obj, path) {

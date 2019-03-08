@@ -8,6 +8,12 @@ module.exports = async (activity) => {
     try {
         api.initialize(activity);
 
+        if(activity.Request.Path) {
+          const user = await api("/v1.0/users/" + activity.Request.Path);
+          activity.Response.Data=convertItem(user.body);
+          return;
+        }
+
         let action = 'firstpage';
         let page = parseInt(activity.Request.Query.page, 10) || 1;
         let pageSize = parseInt(activity.Request.Query.pageSize, 10) || 20;
