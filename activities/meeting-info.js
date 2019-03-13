@@ -107,11 +107,9 @@ module.exports = async (activity) => {
                 };
 
                 data._card.actionList.push(action);
-        }
-
-
-        break;
-    }
+                break;
+        }       
+    
 
     // copy response data
     activity.Response.Data = data;

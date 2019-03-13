@@ -4,7 +4,7 @@ const path = require('path');
 const api = require('./common/api');
 const yaml = require('js-yaml');
 const fs = require('fs');
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 
 module.exports = async (activity) => {
@@ -104,15 +104,17 @@ module.exports = async (activity) => {
                 var schema = readSchema(activity);
 
                 schema.properties.meetingtimes.xvaluelist = [];
-
+                var tz = activity.Context.UserTimezone||"America/New_York";
+                
                 // convert returned suggestions
-                response.body.meetingTimeSuggestions.forEach(meetingTimeSuggestion => {
+                for(var mi=0;mi<response.body.meetingTimeSuggestions.length;mi++) {
+                  var meetingTimeSuggestion = response.body.meetingTimeSuggestions[mi];                
                     schema.properties.meetingtimes.xvaluelist.push({
                         //value: meetingTimeSuggestion.meetingTimeSlot.start.dateTime + "|" + meetingTimeSuggestion.meetingTimeSlot.end.dateTime,
                         value: JSON.stringify(meetingTimeSuggestion.meetingTimeSlot),
-                        title: moment(meetingTimeSuggestion.meetingTimeSlot.start.dateTime).format('lll')
+                        title: moment(meetingTimeSuggestion.meetingTimeSlot.start.dateTime+"Z").tz(tz).format('lll')
                     });
-                });
+                };
 
                 schema.properties.meetingtimes.hide = schema.properties.meetingtimes.xvaluelist.length == 0;
                 if (schema.properties.meetingtimes.xvaluelist.length > 0) form.meetingtimes = schema.properties.meetingtimes.xvaluelist[0].value;
