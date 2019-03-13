@@ -24,9 +24,23 @@ module.exports = async (activity) => {
       return;
     }
 
-    activity.Response.Data.items = response.body.value;
+    activity.Response.Data.items = [];
+
+    for (let i = 0; i < response.body.value.length; i++) {
+      activity.Response.Data.items.push(convertItem(response.body.value[i]));
+    }
+
     activity.Response.Data._nextlink = response.body['@odata.nextLink'];
   } catch (error) {
     api.handleError(activity, error);
   }
 };
+
+function convertItem(_item) {
+  return {
+    id: _item.id,
+    title: _item.name,
+    link: _item.webUrl,
+    date: (new Date(_item.createdDateTime)).toISOString()
+  };
+}
