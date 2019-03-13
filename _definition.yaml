@@ -55,3 +55,6 @@ Scopes:
 - ScopeName: Calendars.ReadWrite.Shared
   ScopeDescription: Read and write to your and shared Outlook calendars
   IsDefault: true
+- ScopeName: files.read
+  IsDefault: true
+  ScopeDescription: files.read

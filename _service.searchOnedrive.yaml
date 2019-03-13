@@ -1,0 +1,4 @@
+ServiceName: 'searchOnedrive'
+InterfaceName: 'items'
+Description: 'searchOnedrive'
+Interfaces: 'search,pagination'
