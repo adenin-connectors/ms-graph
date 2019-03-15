@@ -115,15 +115,7 @@ api.isResponseOk = function (activity, response, succssStatusCodes) {
 };
 
 api.pagination = function (activity) {
-  activity.Response.Data = {};
-
-  const pagination = cfActivity.pagination(activity);
-
-  if (activity.Request.Data && activity.Request.Data.args && activity.Request.Data.args.atAgentAction === 'nextpage') {
-    pagination.nextlink = activity.Request.Data.args._nextlink;
-  }
-
-  return pagination;
+  return cfActivity.pagination(activity);
 };
 
 module.exports = api;

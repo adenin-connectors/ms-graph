@@ -1,6 +1,5 @@
 'use strict';
 
-const {handleError} = require('@adenin/cf-activity');
 const api = require('./common/api');
 
 module.exports = async (activity) => {

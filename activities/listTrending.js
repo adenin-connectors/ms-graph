@@ -1,6 +1,5 @@
 'use strict';
 
-const {handleError} = require('@adenin/cf-activity');
 const api = require('./common/api');
 
 const PAGE_SIZE = 5;

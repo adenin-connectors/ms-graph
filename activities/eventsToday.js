@@ -1,6 +1,5 @@
 'use strict';
 
-const {handleError} = require('@adenin/cf-activity');
 const moment = require('moment');
 const api = require('./common/api');
 
