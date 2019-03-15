@@ -75,7 +75,7 @@ for (const x of helpers) {
   }));
 }
 
-api.handleError = (activity, error) => {
+api.handleError = function (activity, error) {
   if (error.response && error.response.statusCode === 400) {
     // MSGraph might return a 'nice' error message
     // if available use that instead of generic error message

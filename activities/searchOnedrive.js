@@ -12,8 +12,8 @@ module.exports = async (activity) => {
 
     let response;
 
-    if (pages.nextlink) {
-      response = await api(pages.nextlink);
+    if (pages.nextpage) {
+      response = await api(pages.nextpage);
     } else {
       response = await api('/v1.0/me/drive/root/search(q=\'' + query + '\')?$top=' + pages.pageSize);
     }
@@ -30,7 +30,7 @@ module.exports = async (activity) => {
       activity.Response.Data.items.push(convertItem(response.body.value[i]));
     }
 
-    activity.Response.Data._nextlink = response.body['@odata.nextLink'];
+    activity.Response.Data._nextpage = response.body['@odata.nextLink'];
   } catch (error) {
     api.handleError(activity, error);
   }
