@@ -17,7 +17,7 @@ module.exports = async () => {
 
     logger.info('received', response);
 
-    if (!Activity.isResponseOk(response)) return;
+    if (Activity.isErrorResponse(response)) return;
 
     for (let i = 0; i < response.body.value.length; i++) {
       Activity.Response.Data.items.push(convertItem(response.body.value[i]));

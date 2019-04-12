@@ -16,40 +16,34 @@ module.exports = async () => {
   try {
     const response = await api('/v1.0/me/events');
 
-    if (response.statusCode === 200 && response.body.value && response.body.value.length > 0) {
-      const today = new Date();
-      const items = [];
+    if (Activity.isErrorResponse(response)) return;
 
-      for (let i = 0; i < response.body.value.length; i++) {
-        let raw = response.body.value[i];
+    const today = new Date();
+    const items = [];
 
-        const rawDate = new Date(raw.start.dateTime);
+    for (let i = 0; i < response.body.value.length; i++) {
+      let raw = response.body.value[i];
 
-        if (raw.recurrence && (today.setHours(0, 0, 0, 0) !== rawDate.setHours(0, 0, 0, 0))) {
-          raw = await resolveRecurrence(raw.id);
+      const rawDate = new Date(raw.start.dateTime);
 
-          if (raw === null) continue;
-        }
+      if (raw.recurrence && (today.setHours(0, 0, 0, 0) !== rawDate.setHours(0, 0, 0, 0))) {
+        raw = await resolveRecurrence(raw.id);
 
-        const item = convertItem(raw);
-        const eventDate = new Date(item.date);
-
-        if (today.setHours(0, 0, 0, 0) === eventDate.setHours(0, 0, 0, 0)) items.push(item);
+        if (raw === null) continue;
       }
 
-      if (items.length > 0) {
-        Activity.Response.Data.items = items.sort(dateAscending);
-      } else {
-        Activity.Response.Data = {
-          items: [],
-          message: 'No events found for current date'
-        };
-      }
+      const item = convertItem(raw);
+      const eventDate = new Date(item.date);
+
+      if (today.setHours(0, 0, 0, 0) === eventDate.setHours(0, 0, 0, 0)) items.push(item);
+    }
+
+    if (items.length > 0) {
+      Activity.Response.Data.items = items.sort(dateAscending);
     } else {
       Activity.Response.Data = {
-        statusCode: response.statusCode,
-        message: 'Bad request or no events returned',
-        items: []
+        items: [],
+        message: 'No events found for current date'
       };
     }
   } catch (error) {
@@ -68,13 +62,11 @@ async function resolveRecurrence(eventId) {
 
     const response = await api(endpoint);
 
-    if (response.statusCode === 200 && response.body.value && response.body.value.length > 0) {
-      return response.body.value[0]; // can only recur once per day
-    } else {
-      return null;
-    }
+    if (Activity.isErrorResponse(response)) return null;
+
+    return response.body.value[0]; // can only recur once per day
   } catch (error) {
-    return null;
+    api.handleError(Activity, error);
   }
 }
 

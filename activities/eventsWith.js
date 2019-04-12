@@ -12,7 +12,12 @@ const dateAscending = (a, b) => {
 module.exports = async () => {
   try {
     const people = await api(`/v1.0/me/people?$search=${Activity.Request.Query.query}`);
+
+    if (Activity.isErrorResponse(people)) return;
+
     const events = await api('/v1.0/me/events');
+
+    if (Activity.isErrorResponse(events)) return;
 
     const isPeople = (people.statusCode === 200) && people.body.value && (people.body.value.length > 0);
     const isEvents = (events.statusCode === 200) && events.body.value && (events.body.value.length > 0);

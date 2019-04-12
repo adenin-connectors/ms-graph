@@ -8,6 +8,8 @@ module.exports = async () => {
     if (Activity.Request.Path) {
       const user = await api(`/v1.0/users/${Activity.Request.Path}`);
 
+      if (Activity.isErrorResponse(user)) return;
+
       Activity.Response.Data = convertItem(user.body);
 
       return;
