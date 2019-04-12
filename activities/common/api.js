@@ -1,14 +1,8 @@
 'use strict';
 
-const logger = require('@adenin/cf-logger');
 const got = require('got');
 const HttpAgent = require('agentkeepalive');
 const HttpsAgent = HttpAgent.HttpsAgent;
-const cfActivity = require('@adenin/cf-activity');
-
-const endpoint = 'https://graph.microsoft.com';
-
-let _activity = null;
 
 function api(path, opts) {
   if (typeof path !== 'string') {
@@ -17,8 +11,8 @@ function api(path, opts) {
 
   opts = Object.assign({
     json: true,
-    token: _activity.Context.connector.token,
-    endpoint: endpoint,
+    token: Activity.Context.connector.token,
+    endpoint: 'https://graph.microsoft.com',
     agent: {
       http: new HttpAgent(),
       https: new HttpsAgent()
@@ -30,15 +24,11 @@ function api(path, opts) {
     'user-agent': 'adenin Digital Assistant, https://www.adenin.com/digital-assistant/'
   }, opts.headers);
 
-  if (opts.token) {
-    opts.headers.Authorization = `Bearer ${opts.token}`;
-  }
+  if (opts.token) opts.headers.Authorization = `Bearer ${opts.token}`;
 
   const url = /^http(s)\:\/\/?/.test(path) && opts.endpoint ? path : opts.endpoint + path;
 
-  if (opts.stream) {
-    return got.stream(url, opts);
-  }
+  if (opts.stream) return got.stream(url, opts);
 
   return got(url, opts).catch((err) => {
     throw err;
@@ -59,20 +49,14 @@ api.stream = (url, opts) => got(url, Object.assign({}, opts, {
   stream: true
 }));
 
-api.initialize = function (activity) {
-  _activity = activity;
+api.initialize = function () {
+  return;
 };
 
 for (const x of helpers) {
   const method = x.toUpperCase();
-
-  api[x] = (url, opts) => api(url, Object.assign({}, opts, {
-    method
-  }));
-
-  api.stream[x] = (url, opts) => api.stream(url, Object.assign({}, opts, {
-    method
-  }));
+  api[x] = (url, opts) => api(url, Object.assign({}, opts, {method}));
+  api.stream[x] = (url, opts) => api.stream(url, Object.assign({}, opts, {method}));
 }
 
 api.handleError = function (activity, error) {
@@ -100,22 +84,12 @@ api.handleError = function (activity, error) {
 
   let m = error.message;
 
-  if (error.stack) {
-    m = m + ': ' + error.stack;
-  }
+  if (error.stack) m = m + ': ' + error.stack;
 
   activity.Response.ErrorCode = (error.response && error.response.statusCode) || 500;
   activity.Response.Data = {
     ErrorText: m
   };
-};
-
-api.isResponseOk = function (activity, response, succssStatusCodes) {
-  return cfActivity.isResponseOk(activity, response, succssStatusCodes);
-};
-
-api.pagination = function (activity) {
-  return cfActivity.pagination(activity);
 };
 
 module.exports = api;

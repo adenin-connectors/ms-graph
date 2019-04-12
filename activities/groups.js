@@ -2,27 +2,25 @@
 
 const api = require('./common/api');
 
-module.exports = async (activity) => {
+module.exports = async () => {
   try {
-    api.initialize(activity);
-
     const response = await api('/v1.0/me/memberOf');
 
     if (response.statusCode === 200 && response.body.value && response.body.value.length > 0) {
-      activity.Response.Data.items = [];
+      Activity.Response.Data.items = [];
 
       for (let i = 0; i < response.body.value.length; i++) {
-        activity.Response.Data.items.push(convertItem(response.body.value[i]));
+        Activity.Response.Data.items.push(convertItem(response.body.value[i]));
       }
     } else {
-      activity.Response.Data = {
+      Activity.Response.Data = {
         statusCode: response.statusCode,
         message: 'Bad request or no group memberships found',
         items: []
       };
     }
   } catch (error) {
-    api.handleError(activity, error);
+    api.handleError(Activity, error);
   }
 };
 

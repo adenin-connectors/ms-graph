@@ -1,7 +1,6 @@
 'use strict';
 
 const api = require('./common/api');
-const logger = require('@adenin/cf-logger');
 const cfActivity = require('@adenin/cf-activity');
 
 module.exports = async (activity) => {

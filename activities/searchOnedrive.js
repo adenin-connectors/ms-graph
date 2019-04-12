@@ -1,38 +1,31 @@
 'use strict';
 
-const logger = require('@adenin/cf-logger');
 const api = require('./common/api');
 
-module.exports = async (activity) => {
+module.exports = async () => {
   try {
-    api.initialize(activity);
-
-    const pages = api.pagination(activity);
-    const query = activity.Request.Query.query;
+    const pages = Activity.pagination();
+    const query = Activity.Request.Query.query;
 
     let response;
 
     if (pages.nextpage) {
       response = await api(pages.nextpage);
     } else {
-      response = await api('/v1.0/me/drive/root/search(q=\'' + query + '\')?$top=' + pages.pageSize);
+      response = await api(`/v1.0/me/drive/root/search(q='${query}')?$top=${pages.pageSize}`);
     }
 
     logger.info('received', response);
 
-    if (!api.isResponseOk(activity, response)) {
-      return;
-    }
-
-    activity.Response.Data.items = [];
+    if (!Activity.isResponseOk(response)) return;
 
     for (let i = 0; i < response.body.value.length; i++) {
-      activity.Response.Data.items.push(convertItem(response.body.value[i]));
+      Activity.Response.Data.items.push(convertItem(response.body.value[i]));
     }
 
-    activity.Response.Data._nextpage = response.body['@odata.nextLink'];
+    Activity.Response.Data._nextpage = response.body['@odata.nextLink'];
   } catch (error) {
-    api.handleError(activity, error);
+    api.handleError(Activity, error);
   }
 };
 

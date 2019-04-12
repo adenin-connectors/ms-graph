@@ -1,19 +1,19 @@
 'use strict';
 
-const {handleError} = require('@adenin/cf-activity');
 const api = require('./common/api');
 
-module.exports = async function (activity) {
+module.exports = async () => {
   try {
-    api.initialize(activity);
-
     const response = await api('/v1.0/me');
 
-    activity.Response.Data = {
+    if (Activity.isErrorResponse(response)) return;
+
+    Activity.Response.Data = {
       success: response && response.statusCode === 200
     };
   } catch (error) {
-    handleError(activity, error);
-    activity.Response.Data.success = false;
+    api.handleError(Activity, error);
+
+    Activity.Response.Data.success = false;
   }
 };

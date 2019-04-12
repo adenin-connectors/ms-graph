@@ -2,45 +2,20 @@
 
 const api = require('./common/api');
 
-const PAGE_SIZE = 5;
-
-let action = null;
-let page = null;
-let pageSize = null;
-
-module.exports = async function (activity) {
+module.exports = async () => {
   try {
-    api.initialize(activity);
+    if (!Activity.Request.Query.pageSize) Activity.Request.Query.pageSize = 5;
 
-    configureRange();
+    const pages = Activity.pagination();
+    const skip = (pages.page - 1) * pages.pageSize;
+    const top = pages.pageSize;
 
-    const skip = (page - 1) * pageSize;
-    const top = pageSize;
+    const response = await api(`/beta/me/insights/trending?$skip=${skip}&$top=${top}`);
 
-    const response = await api('/beta/me/insights/trending?$skip=' + skip + '&$top=' + top);
+    if (Activity.isErrorResponse(response)) return;
 
-    activity.Response.Data.items = response.body.value;
-
-    activity.Response.Data._action = action;
-    activity.Response.Data._page = page;
-    activity.Response.Data._pageSize = pageSize;
+    Activity.Response.Data.items = response.body.value;
   } catch (error) {
-    api.handleError(activity, error);
-  }
-
-  function configureRange() {
-    action = 'firstpage';
-    page = parseInt(activity.Request.Query.page, 10) || 1;
-    pageSize = parseInt(activity.Request.Query.pageSize, 10) || PAGE_SIZE;
-
-    if (
-      activity.Request.Data &&
-      activity.Request.Data.args &&
-      activity.Request.Data.args.atAgentAction === 'nextpage'
-    ) {
-      action = 'nextpage';
-      page = parseInt(activity.Request.Data.args._page, 10) || 2;
-      pageSize = parseInt(activity.Request.Data.args._pageSize, 10) || PAGE_SIZE;
-    }
+    api.handleError(Activity, error);
   }
 };

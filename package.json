@@ -1,7 +1,7 @@
 {
-  "name": "ms-graph-cloud-function",
+  "name": "ms-graph",
   "version": "1.0.0",
-  "description": "ms-graph-cloud-function cloud function repository",
+  "description": "ms-graph-cloud-function",
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
@@ -9,19 +9,19 @@
   },
   "dependencies": {
     "@adenin/cf-activity": "^1.5.2",
-    "@adenin/cf-logger": "^1.5.1",
     "@adenin/cf-provider": "^2.4.3",
     "agentkeepalive": "^4.0.2",
-    "decache": "^4.5.1",
     "got": "^9.6.0",
     "js-yaml": "^3.12.2",
-    "koa": "^2.7.0",
-    "koa-bodyparser": "^4.2.1",
-    "koa-router": "^7.4.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.23"
   },
   "devDependencies": {
-    "nodemon": "^1.18.10"
+    "@adenin/cf-logger": "^1.6.1",
+    "decache": "^4.5.1",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0",
+    "nodemon": "^1.18.11"
   }
 }

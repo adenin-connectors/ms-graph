@@ -1,11 +1,6 @@
 'use strict';
 
-const path = require('path');
 const api = require('./common/api');
-const yaml = require('js-yaml');
-const fs = require('fs');
-const logger = require('@adenin/cf-logger');
-const cfActivity = require('@adenin/cf-activity');
 
 module.exports = async (activity) => {
 

@@ -12,10 +12,8 @@ const dateAscending = (a, b) => {
   return a < b ? -1 : (a > b ? 1 : 0);
 };
 
-module.exports = async function (activity) {
+module.exports = async () => {
   try {
-    api.initialize(activity);
-
     const response = await api('/v1.0/me/events');
 
     if (response.statusCode === 200 && response.body.value && response.body.value.length > 0) {
@@ -30,36 +28,32 @@ module.exports = async function (activity) {
         if (raw.recurrence && (today.setHours(0, 0, 0, 0) !== rawDate.setHours(0, 0, 0, 0))) {
           raw = await resolveRecurrence(raw.id);
 
-          if (raw === null) {
-            continue;
-          }
+          if (raw === null) continue;
         }
 
         const item = convertItem(raw);
         const eventDate = new Date(item.date);
 
-        if (today.setHours(0, 0, 0, 0) === eventDate.setHours(0, 0, 0, 0)) {
-          items.push(item);
-        }
+        if (today.setHours(0, 0, 0, 0) === eventDate.setHours(0, 0, 0, 0)) items.push(item);
       }
 
       if (items.length > 0) {
-        activity.Response.Data.items = items.sort(dateAscending);
+        Activity.Response.Data.items = items.sort(dateAscending);
       } else {
-        activity.Response.Data = {
+        Activity.Response.Data = {
           items: [],
           message: 'No events found for current date'
         };
       }
     } else {
-      activity.Response.Data = {
+      Activity.Response.Data = {
         statusCode: response.statusCode,
         message: 'Bad request or no events returned',
         items: []
       };
     }
   } catch (error) {
-    api.handleError(activity, error);
+    api.handleError(Activity, error);
   }
 };
 
@@ -70,7 +64,7 @@ async function resolveRecurrence(eventId) {
     const start = (new Date(today.setHours(0, 0, 0, 0))).toISOString();
     const end = (new Date(today.setHours(23, 59, 0, 0))).toISOString();
 
-    const endpoint = '/v1.0/me/events/' + eventId + '/instances?startDateTime=' + start + '&endDateTime=' + end;
+    const endpoint = `/v1.0/me/events/${eventId}/instances?startDateTime=${start}&endDateTime=${end}`;
 
     const response = await api(endpoint);
 
@@ -93,32 +87,18 @@ function convertItem(_item) {
 
   let duration = '';
 
-  if (_duration._data.years > 0) {
-    duration += _duration._data.years + 'y ';
-  }
-
-  if (_duration._data.months > 0) {
-    duration += _duration._data.months + 'mo ';
-  }
-
-  if (_duration._data.days > 0) {
-    duration += _duration._data.days + 'd ';
-  }
-
-  if (_duration._data.hours > 0) {
-    duration += _duration._data.hours + 'h ';
-  }
-
-  if (_duration._data.minutes > 0) {
-    duration += _duration._data.minutes + 'm';
-  }
+  if (_duration._data.years > 0) duration += _duration._data.years + 'y ';
+  if (_duration._data.months > 0) duration += _duration._data.months + 'mo ';
+  if (_duration._data.days > 0) duration += _duration._data.days + 'd ';
+  if (_duration._data.hours > 0) duration += _duration._data.hours + 'h ';
+  if (_duration._data.minutes > 0) duration += _duration._data.minutes + 'm';
 
   item.duration = duration.trim();
 
   if (item.location && item.location.coordinates) {
     const baseUrl = 'https://www.google.com/maps/search/?api=1&query=';
 
-    item.location.link = baseUrl + item.location.coordinates.latitude + ',' + item.location.coordinates.longitude;
+    item.location.link = `${baseUrl}${item.location.coordinates.latitude},${item.location.coordinates.longitude}`;
   } else if (item.location && !item.onlineMeetingUrl) {
     const url = parseUrl(item.location.displayName);
 
@@ -131,9 +111,7 @@ function convertItem(_item) {
   if (!item.onlineMeetingUrl) {
     const url = parseUrl(item.bodyPreview);
 
-    if (url !== null) {
-      item.onlineMeetingUrl = url;
-    }
+    if (url !== null) item.onlineMeetingUrl = url;
   }
 
   // Disable avatars until workable solution found
@@ -157,13 +135,8 @@ function parseUrl(text) {
   if (text.search(urlRegex) !== -1) {
     let url = text.substring(text.search(urlRegex), text.length);
 
-    if (url.indexOf(' ') !== -1) {
-      url = url.substring(0, url.indexOf(' '));
-    }
-
-    if (!url.match(/^[a-zA-Z]+:\/\//)) {
-      url = 'https://' + url;
-    }
+    if (url.indexOf(' ') !== -1) url = url.substring(0, url.indexOf(' '));
+    if (!url.match(/^[a-zA-Z]+:\/\//)) url = 'https://' + url;
 
     return url;
   }
