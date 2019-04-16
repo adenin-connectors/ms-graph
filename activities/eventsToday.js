@@ -29,7 +29,7 @@ module.exports = async () => {
       if (raw.recurrence && (today.setHours(0, 0, 0, 0) !== rawDate.setHours(0, 0, 0, 0))) {
         raw = await resolveRecurrence(raw.id);
 
-        if (raw === null) continue;
+        if (!raw) continue;
       }
 
       const item = convertItem(raw);
