@@ -10,11 +10,13 @@ module.exports = async () => {
     const skip = (pages.page - 1) * pages.pageSize;
     const top = pages.pageSize;
 
-    const response = await api(`/beta/me/insights/trending?$skip=${skip}&$top=${top}`);
+    const response = await api(`/beta/me/insights/used?$skip=${skip}&$top=${top}`);
 
     if (Activity.isErrorResponse(response)) return;
 
-    Activity.Response.Data.items = response.body.value;
+    for (let i = 0; i < response.body.value.length; i++) {
+      Activity.Response.Data.items.push(api.convertInsightsItem(response.body.value[i]));
+    }
   } catch (error) {
     api.handleError(Activity, error);
   }

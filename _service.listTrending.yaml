@@ -1,4 +1,0 @@
-ServiceName: listTrending
-InterfaceName: items
-Description: listTrending
-Interfaces: 'pagination'

@@ -1,0 +1,4 @@
+ServiceName: events-with
+InterfaceName: items
+Description: events-with
+Interfaces: 'search'

@@ -92,4 +92,15 @@ api.handleError = function (activity, error) {
   };
 };
 
+api.convertInsightsItem = function (raw) {
+  return {
+    id: raw.id,
+    title: raw.resourceVisualization.title,
+    description: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
+    link: raw.resourceReference.webUrl,
+    preview: raw.resourceVisualization.previewImageUrl,
+    raw: raw
+  };
+};
+
 module.exports = api;

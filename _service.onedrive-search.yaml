@@ -1,0 +1,4 @@
+ServiceName: 'onedrive-search'
+InterfaceName: 'items'
+Description: 'onedrive-search'
+Interfaces: 'search,pagination'

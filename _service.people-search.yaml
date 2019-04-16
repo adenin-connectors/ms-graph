@@ -1,4 +1,4 @@
-ServiceName: people
+ServiceName: people-search
 InterfaceName: items
-Description: people
+Description: people-search
 Interfaces: 'search, pagination'
