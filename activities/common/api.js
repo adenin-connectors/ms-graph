@@ -96,9 +96,11 @@ api.convertInsightsItem = function (raw) {
   return {
     id: raw.id,
     title: raw.resourceVisualization.title,
-    description: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
+    description: raw.resourceVisualization.previewText,
+    type: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
     link: raw.resourceReference.webUrl,
     preview: raw.resourceVisualization.previewImageUrl,
+    date: raw.lastUsed ? (new Date(raw.lastUsed.lastAccessedDateTime)).toISOString() : undefined,
     raw: raw
   };
 };
