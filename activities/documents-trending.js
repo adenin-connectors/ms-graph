@@ -14,6 +14,8 @@ module.exports = async () => {
 
     if (Activity.isErrorResponse(response)) return;
 
+    Activity.Response.Data.items = [];
+
     for (let i = 0; i < response.body.value.length; i++) {
       Activity.Response.Data.items.push(api.convertInsightsItem(response.body.value[i]));
     }

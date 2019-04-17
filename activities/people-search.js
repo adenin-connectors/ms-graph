@@ -38,6 +38,8 @@ module.exports = async () => {
 
     if (endItem > response.body.value.length) endItem = response.body.value.length;
 
+    Activity.Response.Data.items = [];
+
     for (let i = startItem; i < endItem; i++) {
       Activity.Response.Data.items.push(convertItem(response.body.value[i]));
     }
