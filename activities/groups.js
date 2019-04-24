@@ -2,19 +2,21 @@
 
 const api = require('./common/api');
 
-module.exports = async () => {
+module.exports = async (activity) => {
   try {
+    api.initialize(activity);
+
     const response = await api('/v1.0/me/memberOf');
 
-    if (Activity.isErrorResponse(response)) return;
+    if (activity.isErrorResponse(response)) return;
 
-    Activity.Response.Data.items = [];
+    activity.Response.Data.items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {
-      Activity.Response.Data.items.push(convertItem(response.body.value[i]));
+      activity.Response.Data.items.push(convertItem(response.body.value[i]));
     }
   } catch (error) {
-    api.handleError(Activity, error);
+    api.handleError(activity, error);
   }
 };
 

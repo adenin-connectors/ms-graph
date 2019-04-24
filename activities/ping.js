@@ -2,18 +2,20 @@
 
 const api = require('./common/api');
 
-module.exports = async () => {
+module.exports = async (activity) => {
   try {
+    api.initialize(activity);
+
     const response = await api('/v1.0/me');
 
-    if (Activity.isErrorResponse(response)) return;
+    if ($.isErrorResponse(activity, response)) return;
 
-    Activity.Response.Data = {
+    activity.Response.Data = {
       success: response && response.statusCode === 200
     };
   } catch (error) {
-    api.handleError(Activity, error);
+    api.handleError(activity, error);
 
-    Activity.Response.Data.success = false;
+    activity.Response.Data.success = false;
   }
 };

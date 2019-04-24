@@ -2,24 +2,26 @@
 
 const api = require('./common/api');
 
-module.exports = async () => {
+module.exports = async (activity) => {
   try {
-    if (!Activity.Request.Query.pageSize) Activity.Request.Query.pageSize = 5;
+    if (!activity.Request.Query.pageSize) activity.Request.Query.pageSize = 5;
 
-    const pages = Activity.pagination();
+    const pages = $.pagination(activity);
     const skip = (pages.page - 1) * pages.pageSize;
     const top = pages.pageSize;
 
+    api.initialize(activity);
+
     const response = await api(`/beta/me/insights/trending?$skip=${skip}&$top=${top}`);
 
-    if (Activity.isErrorResponse(response)) return;
+    if ($.isErrorResponse(activity, response)) return;
 
-    Activity.Response.Data.items = [];
+    activity.Response.Data.items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {
-      Activity.Response.Data.items.push(api.convertInsightsItem(response.body.value[i]));
+      activity.Response.Data.items.push(api.convertInsightsItem(response.body.value[i]));
     }
   } catch (error) {
-    api.handleError(Activity, error);
+    api.handleError(activity, error);
   }
 };

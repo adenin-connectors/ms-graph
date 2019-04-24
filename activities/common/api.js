@@ -4,6 +4,8 @@ const got = require('got');
 const HttpAgent = require('agentkeepalive');
 const HttpsAgent = HttpAgent.HttpsAgent;
 
+let _activity = null;
+
 function api(path, opts) {
   if (typeof path !== 'string') {
     return Promise.reject(new TypeError(`Expected \`path\` to be a string, got ${typeof path}`));
@@ -11,7 +13,7 @@ function api(path, opts) {
 
   opts = Object.assign({
     json: true,
-    token: Activity.Context.connector.token,
+    token: _activity.Context.connector.token,
     endpoint: 'https://graph.microsoft.com',
     agent: {
       http: new HttpAgent(),
@@ -49,8 +51,8 @@ api.stream = (url, opts) => got(url, Object.assign({}, opts, {
   stream: true
 }));
 
-api.initialize = function () {
-  return;
+api.initialize = function (activity) {
+  _activity = activity;
 };
 
 for (const x of helpers) {

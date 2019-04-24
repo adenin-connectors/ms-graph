@@ -2,10 +2,12 @@
 
 const api = require('./common/api');
 
-module.exports = async () => {
+module.exports = async (activity) => {
   try {
-    const pages = Activity.pagination();
-    const query = Activity.Request.Query.query;
+    api.initialize(activity);
+
+    const pages = $.pagination(activity);
+    const query = activity.Request.Query.query;
 
     let response;
 
@@ -15,19 +17,17 @@ module.exports = async () => {
       response = await api(`/v1.0/me/drive/root/search(q='${query}')?$top=${pages.pageSize}`);
     }
 
-    logger.info('received', response);
+    if ($.isErrorResponse(activity, response)) return;
 
-    if (Activity.isErrorResponse(response)) return;
-
-    Activity.Response.Data.items = [];
+    activity.Response.Data.items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {
-      Activity.Response.Data.items.push(convertItem(response.body.value[i]));
+      activity.Response.Data.items.push(convertItem(response.body.value[i]));
     }
 
-    Activity.Response.Data._nextpage = response.body['@odata.nextLink'];
+    activity.Response.Data._nextpage = response.body['@odata.nextLink'];
   } catch (error) {
-    api.handleError(Activity, error);
+    api.handleError(activity, error);
   }
 };
 

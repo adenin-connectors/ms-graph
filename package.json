@@ -8,13 +8,12 @@
     "dev": "./node_modules/.bin/nodemon app.js"
   },
   "dependencies": {
-    "@adenin/cf-activity": "^1.5.2",
-    "@adenin/cf-provider": "^2.4.3",
+    "@adenin/cf-provider": "^2.6.0",
     "agentkeepalive": "^4.0.2",
     "got": "^9.6.0",
     "js-yaml": "^3.12.2",
     "moment": "^2.24.0",
-    "moment-timezone": "^0.5.23"
+    "moment-timezone": "^0.5.25"
   },
   "devDependencies": {
     "@adenin/cf-logger": "^1.6.1",

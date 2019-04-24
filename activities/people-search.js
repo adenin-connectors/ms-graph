@@ -3,48 +3,50 @@
 const querystring = require('querystring');
 const api = require('./common/api');
 
-module.exports = async () => {
+module.exports = async (activity) => {
   try {
-    if (Activity.Request.Path) {
-      const user = await api(`/v1.0/users/${Activity.Request.Path}`);
+    api.initialize(activity);
 
-      if (Activity.isErrorResponse(user)) return;
+    if (activity.Request.Path) {
+      const user = await api(`/v1.0/users/${activity.Request.Path}`);
 
-      Activity.Response.Data = convertItem(user.body);
+      if ($.isErrorResponse(activity, user)) return;
+
+      activity.Response.Data = convertItem(user.body);
 
       return;
     }
 
-    const pages = Activity.pagination();
+    const pages = $.pagination(activity);
 
     // return empty result if no search term was provided
-    if (!Activity.Request.Query.query) return;
+    if (!activity.Request.Query.query) return;
 
     let url = '/v1.0/me/people';
 
-    if (Activity.Request.Query.query) {
+    if (activity.Request.Query.query) {
       // replace special characters
-      const search = Activity.Request.Query.query.replace(/[`~!#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, ' ').trim();
+      const search = activity.Request.Query.query.replace(/[`~!#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, ' ').trim();
 
       if (search) url = `${url}?$search=${querystring.escape(search)}`;
     }
 
     const response = await api(url);
 
-    if (Activity.isErrorResponse(response));
+    if ($.isErrorResponse(activity, response));
 
     const startItem = Math.max(pages.page - 1, 0) * pages.pageSize;
     let endItem = startItem + pages.pageSize;
 
     if (endItem > response.body.value.length) endItem = response.body.value.length;
 
-    Activity.Response.Data.items = [];
+    activity.Response.Data.items = [];
 
     for (let i = startItem; i < endItem; i++) {
-      Activity.Response.Data.items.push(convertItem(response.body.value[i]));
+      activity.Response.Data.items.push(convertItem(response.body.value[i]));
     }
   } catch (error) {
-    api.handleError(Activity, error);
+    api.handleError(activity, error);
   }
 };
 

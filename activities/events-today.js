@@ -12,11 +12,13 @@ const dateAscending = (a, b) => {
   return a < b ? -1 : (a > b ? 1 : 0);
 };
 
-module.exports = async () => {
+module.exports = async (activity) => {
   try {
+    api.initialize(activity);
+
     const response = await api('/v1.0/me/events');
 
-    if (Activity.isErrorResponse(response)) return;
+    if ($.isErrorResponse(activity, response)) return;
 
     const today = new Date();
     const items = [];
@@ -39,36 +41,36 @@ module.exports = async () => {
     }
 
     if (items.length > 0) {
-      Activity.Response.Data.items = items.sort(dateAscending);
+      activity.Response.Data.items = items.sort(dateAscending);
     } else {
-      Activity.Response.Data = {
+      activity.Response.Data = {
         items: [],
         message: 'No events found for current date'
       };
     }
   } catch (error) {
-    api.handleError(Activity, error);
+    api.handleError(activity, error);
+  }
+
+  async function resolveRecurrence(eventId) {
+    try {
+      const today = new Date();
+
+      const start = (new Date(today.setHours(0, 0, 0, 0))).toISOString();
+      const end = (new Date(today.setHours(23, 59, 0, 0))).toISOString();
+
+      const endpoint = `/v1.0/me/events/${eventId}/instances?startDateTime=${start}&endDateTime=${end}`;
+
+      const response = await api(endpoint);
+
+      if ($.isErrorResponse(activity, response)) return null;
+
+      return response.body.value[0]; // can only recur once per day
+    } catch (error) {
+      api.handleError(activity, error);
+    }
   }
 };
-
-async function resolveRecurrence(eventId) {
-  try {
-    const today = new Date();
-
-    const start = (new Date(today.setHours(0, 0, 0, 0))).toISOString();
-    const end = (new Date(today.setHours(23, 59, 0, 0))).toISOString();
-
-    const endpoint = `/v1.0/me/events/${eventId}/instances?startDateTime=${start}&endDateTime=${end}`;
-
-    const response = await api(endpoint);
-
-    if (Activity.isErrorResponse(response)) return null;
-
-    return response.body.value[0]; // can only recur once per day
-  } catch (error) {
-    api.handleError(Activity, error);
-  }
-}
 
 function convertItem(_item) {
   const item = _item;

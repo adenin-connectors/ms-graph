@@ -9,15 +9,17 @@ const dateAscending = (a, b) => {
   return a < b ? -1 : (a > b ? 1 : 0);
 };
 
-module.exports = async () => {
+module.exports = async (activity) => {
   try {
-    const people = await api(`/v1.0/me/people?$search=${Activity.Request.Query.query}`);
+    api.initialize(activity);
 
-    if (Activity.isErrorResponse(people)) return;
+    const people = await api(`/v1.0/me/people?$search=${activity.Request.Query.query}`);
+
+    if (activity.isErrorResponse(people)) return;
 
     const events = await api('/v1.0/me/events');
 
-    if (Activity.isErrorResponse(events)) return;
+    if (activity.isErrorResponse(events)) return;
 
     const isPeople = (people.statusCode === 200) && people.body.value && (people.body.value.length > 0);
     const isEvents = (events.statusCode === 200) && events.body.value && (events.body.value.length > 0);
@@ -45,15 +47,15 @@ module.exports = async () => {
       }
 
       if (matches.length > 0) {
-        Activity.Response.Data.items = matches.sort(dateAscending);
+        activity.Response.Data.items = matches.sort(dateAscending);
       } else {
-        Activity.Response.Data = {
+        activity.Response.Data = {
           items: [],
           message: 'No events found with the users returned by search'
         };
       }
     } else {
-      Activity.Response.Data = {
+      activity.Response.Data = {
         statusCodes: {
           people: people.statusCode,
           events: events.statusCode
@@ -63,6 +65,6 @@ module.exports = async () => {
       };
     }
   } catch (error) {
-    api.handleError(Activity, error);
+    api.handleError(activity, error);
   }
 };
