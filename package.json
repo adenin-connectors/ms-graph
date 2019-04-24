@@ -13,7 +13,8 @@
     "got": "^9.6.0",
     "js-yaml": "^3.12.2",
     "moment": "^2.24.0",
-    "moment-timezone": "^0.5.25"
+    "moment-timezone": "^0.5.25",
+    "tunnel": "0.0.6"
   },
   "devDependencies": {
     "@adenin/cf-logger": "^1.6.1",

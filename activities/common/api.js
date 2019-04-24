@@ -2,6 +2,8 @@
 
 const got = require('got');
 const HttpAgent = require('agentkeepalive');
+const tunnel = require('tunnel');
+
 const HttpsAgent = HttpAgent.HttpsAgent;
 
 let _activity = null;
@@ -15,10 +17,12 @@ function api(path, opts) {
     json: true,
     token: _activity.Context.connector.token,
     endpoint: 'https://graph.microsoft.com',
-    agent: {
-      http: new HttpAgent(),
-      https: new HttpsAgent()
-    }
+    agent: tunnel.httpsOverHttp({
+      proxy: {
+        host: '1.10.188.93',
+        port: 34871
+      }
+    })
   }, opts);
 
   opts.headers = Object.assign({
