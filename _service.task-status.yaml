@@ -1,0 +1,8 @@
+ServiceName: 'task-status'
+InterfaceName: 'items'
+Description: 'task-status'
+APIDoc: ''
+Interfaces: 'search,pagination'
+RequiredScopes: ''
+AdditionalParameters:
+Method: ''

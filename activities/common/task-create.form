@@ -1,0 +1,26 @@
+$type: form
+properties:
+  subject:
+    type: string
+    title: Subject
+    name: subject
+    required: !!bool true
+  description:
+    type: string
+    title: Description
+    xtype: textarea
+    name: description
+  starttime:
+    type: string
+    title: Start Date
+    xtype: date
+    name: date
+    required: !!bool false
+  duetime:
+    type: string
+    title: Due Date
+    xtype: date
+    name: date
+    required: !!bool false
+rules: []
+$meta: {}
