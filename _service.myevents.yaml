@@ -1,8 +1,7 @@
-ServiceName: 'myevents'
 InterfaceName: 'items'
 Description: 'My Outlook Calendar'
 APIDoc: ''
-Interfaces: 'daterange'
+Interfaces: 'daterange,pagination,status'
 RequiredScopes: ''
 AdditionalParameters:
 Method: ''
