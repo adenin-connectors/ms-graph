@@ -16,10 +16,10 @@ module.exports = async (activity) => {
     if ($.isErrorResponse(activity, response)) return;
 
     activity.Response.Data.items = convertResponse(response);
-    const value = activity.Response.Data.items.items.length;
     activity.Response.Data.title = T(activity, 'Events Today');
     activity.Response.Data.link = `https://outlook.office365.com/calendar/view/month`;
     activity.Response.Data.linkLabel = T(activity, 'All events');
+    const value = response.body['@odata.count'];
     activity.Response.Data.actionable = value > 0;
 
     if (value > 0) {
