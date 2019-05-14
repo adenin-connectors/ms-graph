@@ -1,0 +1,7 @@
+InterfaceName: 'items'
+Description: 'My Tasks'
+APIDoc: ''
+Interfaces: 'pagination,status'
+RequiredScopes: ''
+AdditionalParameters:
+Method: ''

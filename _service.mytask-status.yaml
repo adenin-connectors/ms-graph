@@ -1,8 +1,0 @@
-ServiceName: 'mytask-status'
-InterfaceName: 'status'
-Description: 'My Outlook Task Status'
-APIDoc: ''
-Interfaces: ''
-RequiredScopes: ''
-AdditionalParameters:
-Method: ''
