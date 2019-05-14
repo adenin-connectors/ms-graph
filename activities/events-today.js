@@ -120,9 +120,27 @@ function convertItem(_item) {
       item.attendees[i].photo = basePhotoUri + _item.attendees[i].emailAddress.address + photoSize;
   }*/
 
+  item.organizer.initials = parseInitials(_item.organizer.emailAddress.name);
+
+  for (let j = 0; j < _item.attendees.length; j++) {
+    item.attendees[j].initials = parseInitials(_item.attendees[j].emailAddress.name);
+  }
+
   item.showDetails = false;
 
   return item;
+}
+
+function parseInitials(name) {
+  const names = name.split(' ');
+  let initials = '';
+
+  // stop after two initials
+  for (let k = 0; k < names.length && k < 2; k++) {
+    initials += names[k].charAt(0);
+  }
+
+  return initials.toUpperCase();
 }
 
 function parseUrl(text) {
