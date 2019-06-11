@@ -1,21 +1,40 @@
 'use strict';
-
 const api = require('./common/api');
 
 module.exports = async (activity) => {
   try {
     api.initialize(activity);
-    const pagination = $.pagination(activity);
-    let url = `/beta/me/outlook/tasks?$count=true&$top=${pagination.pageSize}`;
-    if (pagination.nextpage) {
-      url = pagination.nextpage;
-    }
-    const response = await api(url);
+    let allTasks = [];
+
+    // Since api is currently in beta there is no way filter by daterange in request, this should be
+    // FIXED when api is updated
+
+    // Also can't filter for assignee
+
+    let url = `/beta/me/outlook/tasks?$count=true&$top=1000`;
+    let response = await api(url);
     if ($.isErrorResponse(activity, response)) return;
+    allTasks.push(...response.body.value);
 
-    const value = response.body['@odata.count'];
+    let hasMore = response.body['@odata.nextLink'] || null;
+    while (hasMore) {
+      url = response.body['@odata.nextLink'];
+      response = await api(url);
+      if ($.isErrorResponse(activity, response)) return;
+      allTasks.push(...response.body.value);
 
-    activity.Response.Data.items = convertResponse(response.body.value);
+      hasMore = response.body['@odata.nextLink'] || null;
+    }
+
+    const daterange = $.dateRange(activity);
+    let tasks = api.filterByDateRange(allTasks, daterange);
+    let value = tasks.length;
+    let pagination = $.pagination(activity);
+    tasks = api.paginateItems(tasks, pagination);
+
+    // const value = response.body['@odata.count'];
+
+    activity.Response.Data.items = convertResponse(tasks);
     activity.Response.Data.title = T(activity, 'Active Tasks');
     activity.Response.Data.link = `https://outlook.office365.com/owa/?modurl=0&path=/tasks`;
     activity.Response.Data.linkLabel = T(activity, 'All Tasks');

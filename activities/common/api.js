@@ -107,4 +107,36 @@ api.convertInsightsItem = function (raw) {
   };
 };
 
+//** filters tickets by provided daterange */
+api.filterByDateRange = function (tasks, dateRange) {
+  let filteredTasks = [];
+  const timeMin = Date.parse(dateRange.startDate);
+  const timeMax = Date.parse(dateRange.endDate);
+
+  for (let i = 0; i < tasks.length; i++) {
+    const createTime = Date.parse(tasks[i].createdDateTime);
+    if (createTime > timeMin && createTime < timeMax) {
+      filteredTasks.push(tasks[i]);
+    }
+  }
+
+  return filteredTasks;
+};
+
+//** paginate items[] based on provided pagination */
+api.paginateItems = function (items, pagination) {
+  let pagiantedItems = [];
+  const pageSize = parseInt(pagination.pageSize);
+  const offset = (parseInt(pagination.page) - 1) * pageSize;
+
+  if (offset > items.length) return pagiantedItems;
+
+  for (let i = offset; i < offset + pageSize; i++) {
+    if (i >= items.length) {
+      break;
+    }
+    pagiantedItems.push(items[i]);
+  }
+  return pagiantedItems;
+};
 module.exports = api;
