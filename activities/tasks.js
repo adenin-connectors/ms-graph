@@ -11,7 +11,7 @@ module.exports = async (activity) => {
 
     // Also can't filter for assignee
 
-    let url = `/beta/me/outlook/tasks?$count=true&$top=1000`;
+    let url = `/beta/me/outlook/tasks?$count=true&$top=1000&$orderby=createdDateTime desc`;
     let response = await api(url);
     if ($.isErrorResponse(activity, response)) return;
     allTasks.push(...response.body.value);
@@ -42,6 +42,7 @@ module.exports = async (activity) => {
 
     if (value > 0) {
       activity.Response.Data.value = value;
+      activity.Response.Data.date = activity.Response.Data.items[0].date;
       activity.Response.Data.color = 'blue';
       activity.Response.Data.description = value > 1 ? T(activity, "You have {0} tasks.", value)
         : T(activity, "You have 1 task.");
@@ -71,5 +72,5 @@ function convertResponse(tasks) {
     items.push(item);
   }
 
-  return { items };
+  return items;
 }

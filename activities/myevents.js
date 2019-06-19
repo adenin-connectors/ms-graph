@@ -8,7 +8,8 @@ module.exports = async (activity) => {
     const dateRange = $.dateRange(activity, 'today');
     const pagination = $.pagination(activity);
     // eslint-disable-next-line max-len
-    let url = `/v1.0/me/calendarview?count=true&startdatetime=${dateRange.startDate}&enddatetime=${dateRange.endDate}&$top=${pagination.pageSize}`;
+    let url = `/v1.0/me/calendarview?count=true&startdatetime=${dateRange.startDate}&enddatetime=${dateRange.endDate}&$top=${pagination.pageSize}`+
+    `&$orderby=createdDateTime asc`;
     if (pagination.nextpage) {
       url = pagination.nextpage;
     }
@@ -30,6 +31,7 @@ module.exports = async (activity) => {
       const description = T(activity, `You have {0} {1} today. The next event '{2}' starts {3}`, value, eventPluralorNot, nextEvent.subject, eventFormatedTime);
 
       activity.Response.Data.value = value;
+      activity.Response.Data.date = activity.Response.Data.items[0].date;
       activity.Response.Data.color = 'blue';
       activity.Response.Data.description = description;
     } else {
@@ -60,7 +62,7 @@ function convertResponse(response) {
     items.push(item);
   }
 
-  return { items };
+  return items;
 }
 /**filters out first upcoming event in google calendar*/
 function getNexEvent(events) {
