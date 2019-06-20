@@ -28,28 +28,32 @@ module.exports = async (activity) => {
 
     const daterange = $.dateRange(activity);
     let tasks = api.filterByDateRange(allTasks, daterange);
+    tasks = convertResponse(tasks);
     let value = tasks.length;
+    let dateToAssign = tasks.length > 0 ? tasks[0].date : null;
+
     let pagination = $.pagination(activity);
     tasks = api.paginateItems(tasks, pagination);
 
     // const value = response.body['@odata.count'];
 
-    activity.Response.Data.items = convertResponse(tasks);
-    activity.Response.Data.title = T(activity, 'Active Tasks');
-    activity.Response.Data.link = `https://outlook.office365.com/owa/?modurl=0&path=/tasks`;
-    activity.Response.Data.linkLabel = T(activity, 'All Tasks');
-    activity.Response.Data.actionable = value > 0;
+    activity.Response.Data.items = tasks;
+    if (parseInt(pagination.page) == 1) {
+      activity.Response.Data.title = T(activity, 'Active Tasks');
+      activity.Response.Data.link = `https://outlook.office365.com/owa/?modurl=0&path=/tasks`;
+      activity.Response.Data.linkLabel = T(activity, 'All Tasks');
+      activity.Response.Data.actionable = value > 0;
 
-    if (value > 0) {
-      activity.Response.Data.value = value;
-      activity.Response.Data.date = activity.Response.Data.items[0].date;
-      activity.Response.Data.color = 'blue';
-      activity.Response.Data.description = value > 1 ? T(activity, "You have {0} tasks.", value)
-        : T(activity, "You have 1 task.");
-    } else {
-      activity.Response.Data.description = T(activity, `You have no tasks.`);
+      if (value > 0) {
+        activity.Response.Data.value = value;
+        activity.Response.Data.date = new Date(dateToAssign).toISOString();
+        activity.Response.Data.color = 'blue';
+        activity.Response.Data.description = value > 1 ? T(activity, "You have {0} tasks.", value)
+          : T(activity, "You have 1 task.");
+      } else {
+        activity.Response.Data.description = T(activity, `You have no tasks.`);
+      }
     }
-    activity.Response.Data._nextpage = response.body['@odata.nextLink'];
   } catch (error) {
     api.handleError(activity, error);
   }

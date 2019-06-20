@@ -8,8 +8,8 @@ module.exports = async (activity) => {
     const dateRange = $.dateRange(activity, 'today');
     const pagination = $.pagination(activity);
     // eslint-disable-next-line max-len
-    let url = `/v1.0/me/calendarview?count=true&startdatetime=${dateRange.startDate}&enddatetime=${dateRange.endDate}&$top=${pagination.pageSize}`+
-    `&$orderby=createdDateTime asc`;
+    let url = `/v1.0/me/calendarview?count=true&startdatetime=${dateRange.startDate}&enddatetime=${dateRange.endDate}&$top=${pagination.pageSize}` +
+      `&$orderby=createdDateTime asc`;
     if (pagination.nextpage) {
       url = pagination.nextpage;
     }
@@ -17,25 +17,27 @@ module.exports = async (activity) => {
     if ($.isErrorResponse(activity, response)) return;
 
     activity.Response.Data.items = convertResponse(response);
-    activity.Response.Data.title = T(activity, 'Events Today');
-    activity.Response.Data.link = `https://outlook.office365.com/calendar/view/month`;
-    activity.Response.Data.linkLabel = T(activity, 'All events');
-    const value = response.body['@odata.count'];
-    activity.Response.Data.actionable = value > 0;
+    if (parseInt(pagination.page) == 1) {
+      activity.Response.Data.title = T(activity, 'Events Today');
+      activity.Response.Data.link = `https://outlook.office365.com/calendar/view/month`;
+      activity.Response.Data.linkLabel = T(activity, 'All events');
+      const value = response.body['@odata.count'];
+      activity.Response.Data.actionable = value > 0;
 
-    if (value > 0) {
-      const nextEvent = getNexEvent(response.body.value);
+      if (value > 0) {
+        const nextEvent = getNexEvent(response.body.value);
 
-      const eventFormatedTime = getEventFormatedTimeAsString(activity, nextEvent);
-      const eventPluralorNot = value > 1 ? T(activity, "events scheduled") : T(activity, "event scheduled");
-      const description = T(activity, `You have {0} {1} today. The next event '{2}' starts {3}`, value, eventPluralorNot, nextEvent.subject, eventFormatedTime);
+        const eventFormatedTime = getEventFormatedTimeAsString(activity, nextEvent);
+        const eventPluralorNot = value > 1 ? T(activity, "events scheduled") : T(activity, "event scheduled");
+        const description = T(activity, `You have {0} {1} today. The next event '{2}' starts {3}`, value, eventPluralorNot, nextEvent.subject, eventFormatedTime);
 
-      activity.Response.Data.value = value;
-      activity.Response.Data.date = activity.Response.Data.items[0].date;
-      activity.Response.Data.color = 'blue';
-      activity.Response.Data.description = description;
-    } else {
-      activity.Response.Data.description = T(activity, `You have no events today.`);
+        activity.Response.Data.value = value;
+        activity.Response.Data.date = activity.Response.Data.items[0].date;
+        activity.Response.Data.color = 'blue';
+        activity.Response.Data.description = description;
+      } else {
+        activity.Response.Data.description = T(activity, `You have no events today.`);
+      }
     }
     if (response.body["@odata.nextLink"]) activity.Response.Data._nextpage = response.body["@odata.nextLink"];
   } catch (error) {
