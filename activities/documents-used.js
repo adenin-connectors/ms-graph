@@ -25,9 +25,9 @@ module.exports = async (activity) => {
     const link = activity.Response.Data.items[0].link;
     const base = link.substring(0, link.lastIndexOf('.com') + 4);
 
-    activity.Response.Data.title = T(activity, 'Recent files from Sharepoint');
+    activity.Response.Data.title = T(activity, 'Recent Files');
     activity.Response.Data.link = base;
-    activity.Response.Data.linkLabel = T(activity, 'Go to Sharepoint');
+    activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
   } catch (error) {
     api.handleError(activity, error);
   }
