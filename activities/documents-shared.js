@@ -19,9 +19,32 @@ module.exports = async (activity) => {
     activity.Response.Data.items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {
-      activity.Response.Data.items.push(api.convertInsightsItem(response.body.value[i]));
+      activity.Response.Data.items.push(convertItem(response.body.value[i]));
+    }
+
+    activity.Response.Data.title = T(activity, 'Shared with You');
+
+    if (activity.Response.Data.items[0] && activity.Response.Data.items[0].containerLink) {
+      activity.Response.Data.link = activity.Response.Data.items[0].containerLink;
+      activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
     }
   } catch (error) {
     api.handleError(activity, error);
   }
 };
+
+function convertItem(raw) {
+  return {
+    id: raw.id,
+    title: raw.resourceVisualization.title,
+    description: raw.lastShared.sharingSubject,
+    type: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
+    link: raw.lastShared.sharingReference.webUrl,
+    preview: raw.resourceVisualization.previewImageUrl,
+    containerTitle: raw.resourceVisualization.containerDisplayName,
+    containerLink: raw.resourceVisualization.containerWebUrl,
+    containerType: raw.resourceVisualization.containerType,
+    date: new Date(raw.lastShared.sharedDateTime),
+    raw: raw
+  };
+}
