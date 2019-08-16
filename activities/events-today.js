@@ -124,8 +124,12 @@ function convertItem(_item) {
 
   item.organizer.initials = parseInitials(_item.organizer.emailAddress.name);
 
-  for (let j = 0; j < _item.attendees.length; j++) {
-    item.attendees[j].initials = parseInitials(_item.attendees[j].emailAddress.name);
+  if (_item.attendees.length > 0) {
+    for (let j = 0; j < _item.attendees.length; j++) {
+      item.attendees[j].initials = parseInitials(_item.attendees[j].emailAddress.name);
+    }
+  } else {
+    item.attendees = null;
   }
 
   item.showDetails = false;
