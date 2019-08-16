@@ -1,0 +1,4 @@
+ServiceName: documents-shared
+InterfaceName: items
+Description: documents-shared
+Interfaces: 'pagination'
