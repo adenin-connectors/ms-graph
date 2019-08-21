@@ -89,17 +89,19 @@ function convertItem(_item) {
 
   item.duration = duration.trim();
 
-  if (item.location && item.location.coordinates) {
+  if (item.location && item.location.coordinates && item.location.coordinates.latitude) {
     const baseUrl = 'https://www.google.com/maps/search/?api=1&query=';
 
     item.location.link = `${baseUrl}${item.location.coordinates.latitude},${item.location.coordinates.longitude}`;
-  } else if (item.location && !item.onlineMeetingUrl) {
+  } else if (item.location.displayName && !item.onlineMeetingUrl) {
     const url = parseUrl(item.location.displayName);
 
     if (url !== null) {
       item.onlineMeetingUrl = url;
       item.location = null;
     }
+  } else {
+    item.location = null;
   }
 
   if (!item.onlineMeetingUrl) {
@@ -122,8 +124,12 @@ function convertItem(_item) {
 
   item.organizer.initials = parseInitials(_item.organizer.emailAddress.name);
 
-  for (let j = 0; j < _item.attendees.length; j++) {
-    item.attendees[j].initials = parseInitials(_item.attendees[j].emailAddress.name);
+  if (_item.attendees.length > 0) {
+    for (let j = 0; j < _item.attendees.length; j++) {
+      item.attendees[j].initials = parseInitials(_item.attendees[j].emailAddress.name);
+    }
+  } else {
+    item.attendees = null;
   }
 
   item.showDetails = false;

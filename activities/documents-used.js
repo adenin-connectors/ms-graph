@@ -22,12 +22,12 @@ module.exports = async (activity) => {
       activity.Response.Data.items.push(api.convertInsightsItem(response.body.value[i]));
     }
 
-    const link = activity.Response.Data.items[0].link;
-    const base = link.substring(0, link.lastIndexOf('.com') + 4);
-
     activity.Response.Data.title = T(activity, 'Recent Files');
-    activity.Response.Data.link = base;
-    activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
+
+    if (activity.Response.Data.items[0] && activity.Response.Data.items[0].containerLink) {
+      activity.Response.Data.link = activity.Response.Data.items[0].containerLink;
+      activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
+    }
   } catch (error) {
     api.handleError(activity, error);
   }

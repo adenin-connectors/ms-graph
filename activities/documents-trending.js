@@ -21,6 +21,13 @@ module.exports = async (activity) => {
     for (let i = 0; i < response.body.value.length; i++) {
       activity.Response.Data.items.push(api.convertInsightsItem(response.body.value[i]));
     }
+
+    activity.Response.Data.title = T(activity, 'Trending Files');
+
+    if (activity.Response.Data.items[0] && activity.Response.Data.items[0].containerLink) {
+      activity.Response.Data.link = activity.Response.Data.items[0].containerLink;
+      activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
+    }
   } catch (error) {
     api.handleError(activity, error);
   }
