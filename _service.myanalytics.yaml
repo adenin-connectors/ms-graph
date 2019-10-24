@@ -1,0 +1,8 @@
+ServiceName: 'myanalytics'
+InterfaceName: 'items'
+Description: 'myanalytics'
+APIDoc: ''
+Interfaces: 'search,pagination'
+RequiredScopes: ''
+AdditionalParameters:
+Method: ''

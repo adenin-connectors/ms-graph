@@ -58,3 +58,6 @@ Scopes:
 - ScopeName: files.read
   IsDefault: true
   ScopeDescription: files.read
+- ScopeName: Analytics.Read
+  ScopeDescription: Allows the app to read user activities statistics without a signed-in user
+  IsDefault: true
