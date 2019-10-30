@@ -3,8 +3,6 @@
 const moment = require('moment');
 const api = require('./common/api');
 
-const urlRegex = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
-
 const dateAscending = (a, b) => {
   a = new Date(a.date);
   b = new Date(b.date);
@@ -84,8 +82,8 @@ function convertItem(_item) {
   if (_duration._data.years > 0) duration += _duration._data.years + 'y ';
   if (_duration._data.months > 0) duration += _duration._data.months + 'mo ';
   if (_duration._data.days > 0) duration += _duration._data.days + 'd ';
-  if (_duration._data.hours > 0) duration += _duration._data.hours + 'h ';
-  if (_duration._data.minutes > 0) duration += _duration._data.minutes + 'm';
+  if (_duration._data.hours > 0) duration += _duration._data.hours + ' hour ';
+  if (_duration._data.minutes > 0) duration += _duration._data.minutes + ' min ';
 
   item.duration = duration.trim();
 
@@ -110,23 +108,11 @@ function convertItem(_item) {
     if (url !== null) item.onlineMeetingUrl = url;
   }
 
-  // Disable avatars until workable solution found
-
-  /*const basePhotoUri = 'https://outlook.office.com/owa/service.svc/s/GetPersonaPhoto?email=';
-
-  const photoSize = '&size=HR64x64';
-
-  item.organizer.photo = basePhotoUri + _item.organizer.emailAddress.address + photoSize;
-
-  for (let i = 0; i < _item.attendees.length; i++) {
-      item.attendees[i].photo = basePhotoUri + _item.attendees[i].emailAddress.address + photoSize;
-  }*/
-
-  item.organizer.initials = parseInitials(_item.organizer.emailAddress.name);
+  item.organizer.avatarProperties = parseAvatarProperties(_item.organizer.emailAddress.name);
 
   if (_item.attendees.length > 0) {
     for (let j = 0; j < _item.attendees.length; j++) {
-      item.attendees[j].initials = parseInitials(_item.attendees[j].emailAddress.name);
+      item.attendees[j].avatarProperties = parseAvatarProperties(_item.attendees[j].emailAddress.name);
     }
   } else {
     item.attendees = null;
@@ -137,7 +123,15 @@ function convertItem(_item) {
   return item;
 }
 
-function parseInitials(name) {
+const colors = ['blue', 'green', 'orange', 'pink', 'purple', 'red', 'teal'];
+
+function parseAvatarProperties(name) {
+  let colorCode = 1;
+
+  for (let k = 0; k < name.length; k++) {
+    colorCode += name.charCodeAt(k);
+  }
+
   const names = name.split(' ');
   let initials = '';
 
@@ -146,10 +140,17 @@ function parseInitials(name) {
     initials += names[k].charAt(0);
   }
 
-  return initials.toUpperCase();
+  return {
+    initials: initials.toUpperCase(),
+    color: colors[colorCode % colors.length]
+  };
 }
 
+const urlRegex = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+
 function parseUrl(text) {
+  text = text.replace(/\n|\r/g, ' ');
+
   if (text.search(urlRegex) !== -1) {
     let url = text.substring(text.search(urlRegex), text.length);
 

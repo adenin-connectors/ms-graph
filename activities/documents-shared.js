@@ -22,7 +22,7 @@ module.exports = async (activity) => {
       activity.Response.Data.items.push(convertItem(response.body.value[i]));
     }
 
-    activity.Response.Data.title = T(activity, 'Shared with You');
+    activity.Response.Data.title = T(activity, 'Files Shared with You');
 
     if (activity.Response.Data.items[0] && activity.Response.Data.items[0].containerLink) {
       activity.Response.Data.link = activity.Response.Data.items[0].containerLink;
