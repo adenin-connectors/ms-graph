@@ -35,6 +35,9 @@ module.exports = async (activity) => {
 
       const item = convertItem(raw);
       const eventDate = new Date(item.date);
+      const now = new Date();
+
+      if (eventDate < now) item.hasHappened = true;
 
       if (today.setHours(0, 0, 0, 0) === eventDate.setHours(0, 0, 0, 0)) items.push(item);
     }
