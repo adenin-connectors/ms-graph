@@ -1,6 +1,7 @@
 'use strict';
 
 const moment = require('moment');
+const timezone = require('moment-timezone');
 const api = require('./common/api');
 
 const dateAscending = (a, b) => {
@@ -73,7 +74,7 @@ module.exports = async (activity) => {
 function convertItem(_item) {
   const item = _item;
 
-  item.date = new Date(_item.start.dateTime).toISOString();
+  item.date = timezone.tz(_item.start.dateTime, _item.start.timeZone).format();
 
   const _duration = moment.duration(moment(_item.end.dateTime).diff(moment(_item.start.dateTime)));
 
