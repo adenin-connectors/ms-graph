@@ -74,12 +74,11 @@ function convertItem(raw) {
     const lastOpened = new Date(raw.lastUsed.lastAccessedDateTime);
     const lastModified = new Date(raw.lastUsed.lastModifiedDateTime);
 
-    if (lastOpened > twentyFourHoursAgo) {
-      item.lastOpened = lastOpened;
-    } else if (lastModified > twoDaysAgo) {
-      item.lastModified = lastModified;
-    }
+    if (lastOpened > twentyFourHoursAgo) item.lastOpened = lastOpened;
+    if (lastModified > twoDaysAgo) item.lastModified = lastModified;
   }
+
+  item.raw = raw;
 
   return item;
 }
