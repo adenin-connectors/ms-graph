@@ -77,6 +77,9 @@ module.exports = async (activity) => {
 function convertItem(_item) {
   const item = _item;
 
+  item.bodyPreview = item.bodyPreview.replace(/\r/g, '');
+  item.bodyPreview = item.bodyPreview.replace(/\n/g, '<br/>');
+
   item.date = timezone.tz(_item.start.dateTime, _item.start.timeZone).format();
 
   const _duration = moment.duration(moment(_item.end.dateTime).diff(moment(_item.start.dateTime)));
