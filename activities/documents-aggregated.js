@@ -1,6 +1,7 @@
 'use strict';
 
 const api = require('./common/api');
+const helpers = require('./common/helpers');
 
 module.exports = async (activity) => {
   try {
@@ -59,7 +60,7 @@ function convertItem(raw) {
   };
 
   if (raw.lastShared) {
-    item.sharedBy = raw.lastShared.sharedBy.displayName;
+    item.sharedBy = helpers.stripSpecialChars(raw.lastShared.sharedBy.displayName);
     item.sharedDate = new Date(raw.lastShared.sharedDateTime);
     item.description = raw.lastShared.sharingSubject;
     item.link = raw.lastShared.sharingReference.webUrl;

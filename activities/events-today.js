@@ -1,8 +1,9 @@
 'use strict';
 
-const moment = require('moment');
-const timezone = require('moment-timezone');
+const moment = require('moment-timezone');
+
 const api = require('./common/api');
+const helpers = require('./common/helpers');
 
 const dateAscending = (a, b) => {
   a = new Date(a.date);
@@ -19,31 +20,26 @@ module.exports = async (activity) => {
 
     if ($.isErrorResponse(activity, response)) return;
 
-    const today = new Date();
+    const today = moment().utc();
     const items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {
       let raw = response.body.value[i];
 
-      const rawDate = new Date(raw.start.dateTime);
+      const eventDate = moment(raw.start.dateTime).tz(raw.start.timeZone).utc();
 
-      if (raw.recurrence && (today.setHours(0, 0, 0, 0) !== rawDate.setHours(0, 0, 0, 0))) {
+      if (raw.recurrence && !today.isSame(eventDate, 'date')) {
         raw = await resolveRecurrence(raw.id);
 
         if (!raw) continue;
       }
 
       const item = convertItem(raw);
-      const eventDate = new Date(item.date);
-      const endDate = new Date(item.end.dateTime);
-      const now = new Date();
 
-      if (eventDate < now) item.hasHappened = true;
+      const endDate = moment(item.end.dateTime).tz(item.end.timeZone).utc();
+      const overAnHourAgo = today.clone().minutes(today.minutes() - 61);
 
-      const overAnHourAgo = new Date();
-      overAnHourAgo.setMinutes(overAnHourAgo.getMinutes() - 61);
-
-      if (today.setHours(0, 0, 0, 0) === eventDate.setHours(0, 0, 0, 0) && endDate > overAnHourAgo) items.push(item);
+      if (today.isSame(eventDate, 'date') && endDate.isAfter(overAnHourAgo)) items.push(item);
     }
 
     if (items.length > 0) {
@@ -60,10 +56,8 @@ module.exports = async (activity) => {
 
   async function resolveRecurrence(eventId) {
     try {
-      const today = new Date();
-
-      const start = (new Date(today.setHours(0, 0, 0, 0))).toISOString();
-      const end = (new Date(today.setHours(23, 59, 0, 0))).toISOString();
+      const start = moment().utc().startOf('day').format();
+      const end = moment().utc().endOf('day').format();
 
       const endpoint = `/v1.0/me/events/${eventId}/instances?startDateTime=${start}&endDateTime=${end}`;
 
@@ -84,7 +78,7 @@ function convertItem(_item) {
   item.bodyPreview = item.bodyPreview.replace(/\r/g, '');
   item.bodyPreview = item.bodyPreview.replace(/\n/g, '<br/>');
 
-  item.date = timezone.tz(_item.start.dateTime, _item.start.timeZone).format();
+  item.date = moment(_item.start.dateTime).tz(_item.start.timeZone).utc().format();
 
   const _duration = moment.duration(moment(_item.end.dateTime).diff(moment(_item.start.dateTime)));
 
@@ -120,10 +114,12 @@ function convertItem(_item) {
   }
 
   item.organizer.avatarProperties = parseAvatarProperties(_item.organizer.emailAddress.name);
+  item.organizer.emailAddress.name = helpers.stripSpecialChars(item.organizer.emailAddress.name);
 
   if (_item.attendees.length > 0) {
     for (let j = 0; j < _item.attendees.length; j++) {
       item.attendees[j].avatarProperties = parseAvatarProperties(_item.attendees[j].emailAddress.name);
+      item.attendees[j].emailAddress.name = helpers.stripSpecialChars(item.attendees[j].emailAddress.name);
     }
   } else {
     item.attendees = null;
