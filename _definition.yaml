@@ -28,9 +28,33 @@ Scopes:
 - ScopeName: offline_access
   ScopeDescription: offline_access
   IsDefault: true
+- ScopeName: user.read
+  ScopeDescription: user.read  
+  IsDefault: true
 - ScopeName: calendars.read
   ScopeDescription: calendars.read
+  IsDefault: true
+- ScopeName: user.read.all
+  ScopeDescription: user.read.all
+  IsDefault: true
+- ScopeName: group.read.all
+  ScopeDescription: group.read.all
+  IsDefault: true
+- ScopeName: directory.read.all
+  ScopeDescription: directory.read.all
+  IsDefault: true
+- ScopeName: people.read.all
+  ScopeDescription: people.read.all
   IsDefault: true
 - ScopeName: sites.read.all
   ScopeDescription: sites.read.all
   IsDefault: true
+- ScopeName: Tasks.ReadWrite
+  ScopeDescription: Update Outlook Tasks
+  IsDefault: true
+- ScopeName: Calendars.ReadWrite.Shared
+  ScopeDescription: Read and write to your and shared Outlook calendars
+  IsDefault: true
+- ScopeName: files.read
+  IsDefault: true
+  ScopeDescription: files.read
