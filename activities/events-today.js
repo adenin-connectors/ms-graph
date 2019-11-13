@@ -20,7 +20,9 @@ module.exports = async (activity) => {
 
     if ($.isErrorResponse(activity, response)) return;
 
-    const today = moment().utc();
+    moment.tz.setDefault(activity.Context.UserTimezone);
+
+    const today = moment().tz(activity.Context.UserTimezone).utc();
     const items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {

@@ -1,6 +1,7 @@
 'use strict';
 
 const api = require('./common/api');
+const helpers = require('./common/helpers');
 
 module.exports = async (activity) => {
   try {
@@ -41,7 +42,7 @@ function convertItem(raw) {
     type: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
     link: raw.lastShared.sharingReference.webUrl,
     preview: raw.resourceVisualization.previewImageUrl,
-    containerTitle: raw.resourceVisualization.containerDisplayName,
+    containerTitle: helpers.stripSpecialChars(raw.resourceVisualization.containerDisplayName),
     containerLink: raw.resourceVisualization.containerWebUrl,
     containerType: raw.resourceVisualization.containerType,
     date: new Date(raw.lastShared.sharedDateTime),

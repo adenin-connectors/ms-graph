@@ -1,6 +1,7 @@
 'use strict';
 
 const api = require('./common/api');
+const helpers = require('./common/helpers');
 
 module.exports = async (activity) => {
   try {
@@ -19,7 +20,7 @@ module.exports = async (activity) => {
     activity.Response.Data.items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {
-      activity.Response.Data.items.push(api.convertInsightsItem(response.body.value[i]));
+      activity.Response.Data.items.push(helpers.convertInsightsItem(response.body.value[i]));
     }
 
     activity.Response.Data.title = T(activity, 'Trending Files');

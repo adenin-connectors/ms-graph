@@ -94,41 +94,6 @@ api.handleError = function (activity, error) {
   };
 };
 
-api.convertInsightsItem = function (raw) {
-  const type = raw.resourceVisualization.type.toLowerCase();
-  let nowIcon = 'now:file';
-
-  switch (type) {
-  case 'word':
-    nowIcon = 'now:word';
-    break;
-  case 'powerpoint':
-    nowIcon = 'now:powerpoint';
-    break;
-  case 'excel':
-    nowIcon = 'now:excel';
-    break;
-  case 'pdf':
-    nowIcon = 'now:pdf';
-    break;
-  }
-
-  return {
-    id: raw.id,
-    title: raw.resourceVisualization.title,
-    description: raw.resourceVisualization.previewText,
-    type: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
-    link: raw.resourceReference.webUrl,
-    preview: raw.resourceVisualization.previewImageUrl,
-    containerTitle: raw.resourceVisualization.containerDisplayName,
-    containerLink: raw.resourceVisualization.containerWebUrl,
-    containerType: raw.resourceVisualization.containerType,
-    nowIcon: nowIcon,
-    date: raw.lastUsed ? (new Date(raw.lastUsed.lastAccessedDateTime)).toISOString() : undefined,
-    raw: raw
-  };
-};
-
 //** filters tickets by provided daterange */
 api.filterByDateRange = function (tasks, dateRange) {
   let filteredTasks = [];

@@ -54,7 +54,7 @@ function convertItem(raw) {
     type: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
     link: raw.resourceReference.webUrl,
     preview: raw.resourceVisualization.previewImageUrl,
-    containerTitle: raw.resourceVisualization.containerDisplayName,
+    containerTitle: helpers.stripSpecialChars(raw.resourceVisualization.containerDisplayName),
     containerLink: raw.resourceVisualization.containerWebUrl,
     containerType: raw.resourceVisualization.containerType
   };
