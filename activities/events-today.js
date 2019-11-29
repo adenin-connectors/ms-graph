@@ -5,13 +5,6 @@ const moment = require('moment-timezone');
 const api = require('./common/api');
 const helpers = require('./common/helpers');
 
-const dateAscending = (a, b) => {
-  a = new Date(a.date);
-  b = new Date(b.date);
-
-  return a < b ? -1 : (a > b ? 1 : 0);
-};
-
 module.exports = async (activity) => {
   try {
     api.initialize(activity);
@@ -44,13 +37,32 @@ module.exports = async (activity) => {
       if (today.isSame(eventDate, 'date') && endDate.isAfter(overAnHourAgo)) items.push(item);
     }
 
-    if (items.length > 0) {
-      activity.Response.Data.items = items.sort(dateAscending);
-    } else {
-      activity.Response.Data = {
-        items: [],
-        message: 'No events found for current date'
-      };
+    const value = items.length;
+
+    const pagination = $.pagination(activity);
+
+    activity.Response.Data.items = paginateItems(items, pagination);
+
+    if (parseInt(pagination.page) === 1) {
+      activity.Response.Data.title = T(activity, 'Events Today');
+      activity.Response.Data.link = 'https://outlook.office365.com/mail/inbox';
+      activity.Response.Data.linkLabel = T(activity, 'All events');
+      activity.Response.Data.thumbnail = 'https://www.adenin.com/assets/images/wp-images/logo/office-365.svg';
+      activity.Response.Data.actionable = value > 0;
+
+      if (value > 0) {
+        const first = activity.Response.Data.items[0];
+
+        activity.Response.Data.value = value;
+        activity.Response.Data.date = first.date;
+        activity.Response.Data.description = value > 1 ? `You have ${value} events today.` : 'You have 1 event today';
+
+        const when = moment().to(moment(first.date));
+
+        activity.Response.Data.briefing = activity.Response.Data.description + ` The next is '${first.title}' ${when}`;
+      } else {
+        activity.Response.Data.description = T(activity, 'You have no events today.');
+      }
     }
   } catch (error) {
     api.handleError(activity, error);
@@ -74,32 +86,28 @@ module.exports = async (activity) => {
   }
 };
 
-function convertItem(_item) {
-  const item = _item;
+function convertItem(raw) {
+  const item = {
+    id: raw.id,
+    title: raw.subject,
+    link: raw.webLink,
+    isCancelled: raw.isCancelled,
+    raw: raw
+  };
 
-  item.bodyPreview = item.bodyPreview.replace(/\r/g, '');
-  item.bodyPreview = item.bodyPreview.replace(/\n/g, '<br/>');
+  item.description = raw.bodyPreview.replace(/\r/g, '');
+  item.description = item.description.replace(/\n/g, '<br/>');
 
-  item.date = moment(_item.start.dateTime).tz(_item.start.timeZone).utc().format();
+  item.date = moment(raw.start.dateTime).tz(raw.start.timeZone).utc().format();
+  item.duration = moment.duration(moment(raw.end.dateTime).diff(moment(raw.start.dateTime))).humanize();
 
-  const _duration = moment.duration(moment(_item.end.dateTime).diff(moment(_item.start.dateTime)));
-
-  let duration = '';
-
-  if (_duration._data.years > 0) duration += _duration._data.years + 'y ';
-  if (_duration._data.months > 0) duration += _duration._data.months + 'mo ';
-  if (_duration._data.days > 0) duration += _duration._data.days + 'd ';
-  if (_duration._data.hours > 0) duration += _duration._data.hours + ' hour ';
-  if (_duration._data.minutes > 0) duration += _duration._data.minutes + ' min ';
-
-  item.duration = duration.trim();
-
-  if (item.location && item.location.coordinates && item.location.coordinates.latitude) {
-    const baseUrl = 'https://www.google.com/maps/search/?api=1&query=';
-
-    item.location.link = `${baseUrl}${item.location.coordinates.latitude},${item.location.coordinates.longitude}`;
-  } else if (item.location.displayName && !item.onlineMeetingUrl) {
-    const url = parseUrl(item.location.displayName);
+  if (raw.location && raw.location.coordinates && raw.location.coordinates.latitude) {
+    item.location = {
+      link: `https://www.google.com/maps/search/?api=1&query=${raw.location.coordinates.latitude},${raw.location.coordinates.longitude}`,
+      title: raw.location.displayName
+    };
+  } else if (raw.location.displayName && !raw.onlineMeetingUrl) {
+    const url = parseUrl(raw.location.displayName);
 
     if (url !== null) {
       item.onlineMeetingUrl = url;
@@ -110,21 +118,36 @@ function convertItem(_item) {
   }
 
   if (!item.onlineMeetingUrl) {
-    const url = parseUrl(item.bodyPreview);
+    const url = parseUrl(item.description);
 
     if (url !== null) item.onlineMeetingUrl = url;
   }
 
-  item.organizer.avatarProperties = parseAvatarProperties(_item.organizer.emailAddress.name);
-  item.organizer.emailAddress.name = helpers.stripSpecialChars(item.organizer.emailAddress.name);
+  item.organizer.avatarProperties = parseAvatarProperties(raw.organizer.emailAddress.name);
+  item.organizer.email = raw.organizer.emailAddress.address;
+  item.organizer.name = helpers.stripSpecialChars(raw.organizer.emailAddress.name);
 
-  if (_item.attendees.length > 0) {
-    for (let j = 0; j < _item.attendees.length; j++) {
-      item.attendees[j].avatarProperties = parseAvatarProperties(_item.attendees[j].emailAddress.name);
-      item.attendees[j].emailAddress.name = helpers.stripSpecialChars(item.attendees[j].emailAddress.name);
+  item.attendees = [];
+
+  if (raw.attendees.length > 0) {
+    for (let j = 0; j < raw.attendees.length; j++) {
+      const attendee = {
+        email: raw.attendees[j].emailAddress.address,
+        name: helpers.stripSpecialChars(raw.attendees[j].emailAddress.name),
+        avatarProperties: parseAvatarProperties(raw.attendees[j].emailAddress.name)
+      };
+
+      item.attendees.push(attendee);
     }
   } else {
     item.attendees = null;
+  }
+
+  if (raw.responseStatus.response !== 'none') {
+    item.response = {
+      status: raw.responseStatus.response === 'accepted' ? 'accepted' : 'declined',
+      date: raw.responseStatus.time
+    };
   }
 
   item.showDetails = false;
@@ -170,4 +193,20 @@ function parseUrl(text) {
   }
 
   return null;
+}
+
+function paginateItems(items, pagination) {
+  const paginatedItems = [];
+  const pageSize = parseInt(pagination.pageSize);
+  const offset = (parseInt(pagination.page) - 1) * pageSize;
+
+  if (offset > items.length) return paginatedItems;
+
+  for (let i = offset; i < offset + pageSize; i++) {
+    if (i >= items.length) break;
+
+    paginatedItems.push(items[i]);
+  }
+
+  return paginatedItems;
 }
