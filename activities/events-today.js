@@ -31,7 +31,7 @@ module.exports = async (activity) => {
 
       const item = convertItem(raw);
 
-      const endDate = moment(item.end.dateTime).tz(item.end.timeZone).utc();
+      const endDate = moment(raw.end.dateTime).tz(raw.end.timeZone).utc();
       const overAnHourAgo = today.clone().minutes(today.minutes() - 61);
 
       if (today.isSame(eventDate, 'date') && endDate.isAfter(overAnHourAgo)) items.push(item);
@@ -55,7 +55,7 @@ module.exports = async (activity) => {
 
         activity.Response.Data.value = value;
         activity.Response.Data.date = first.date;
-        activity.Response.Data.description = value > 1 ? `You have ${value} events today.` : 'You have 1 event today';
+        activity.Response.Data.description = value > 1 ? `You have ${value} events today.` : 'You have 1 event today.';
 
         const when = moment().to(moment(first.date));
 
@@ -123,9 +123,11 @@ function convertItem(raw) {
     if (url !== null) item.onlineMeetingUrl = url;
   }
 
-  item.organizer.avatarProperties = parseAvatarProperties(raw.organizer.emailAddress.name);
-  item.organizer.email = raw.organizer.emailAddress.address;
-  item.organizer.name = helpers.stripSpecialChars(raw.organizer.emailAddress.name);
+  item.organizer = {
+    avatarProperties: parseAvatarProperties(raw.organizer.emailAddress.name),
+    email: raw.organizer.emailAddress.address,
+    name: helpers.stripSpecialChars(raw.organizer.emailAddress.name)
+  };
 
   item.attendees = [];
 
