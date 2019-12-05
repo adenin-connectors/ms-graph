@@ -41,7 +41,7 @@ module.exports = async (activity) => {
 
     const pagination = $.pagination(activity);
 
-    activity.Response.Data.items = paginateItems(items, pagination);
+    activity.Response.Data.items = api.paginateItems(items, pagination);
 
     if (parseInt(pagination.page) === 1) {
       activity.Response.Data.title = T(activity, 'Events Today');
@@ -175,20 +175,4 @@ function parseUrl(text) {
   }
 
   return null;
-}
-
-function paginateItems(items, pagination) {
-  const paginatedItems = [];
-  const pageSize = parseInt(pagination.pageSize);
-  const offset = (parseInt(pagination.page) - 1) * pageSize;
-
-  if (offset > items.length) return paginatedItems;
-
-  for (let i = offset; i < offset + pageSize; i++) {
-    if (i >= items.length) break;
-
-    paginatedItems.push(items[i]);
-  }
-
-  return paginatedItems;
 }

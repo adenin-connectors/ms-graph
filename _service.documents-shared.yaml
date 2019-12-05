@@ -1,4 +1,4 @@
-ServiceName: documents-shared
-InterfaceName: items
-Description: documents-shared
-Interfaces: 'pagination'
+ServiceName: 'documents-shared'
+InterfaceName: 'status'
+Description: 'Shared Documents'
+Interfaces: 'items,daterange,pagination'

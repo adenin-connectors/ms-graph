@@ -1,8 +1,4 @@
 ServiceName: 'documents-aggregated'
-InterfaceName: 'items'
-Description: 'documents-aggregated'
-APIDoc: ''
-Interfaces: 'search,pagination'
-RequiredScopes: ''
-AdditionalParameters:
-Method: ''
+InterfaceName: 'status'
+Description: 'Cloud Documents'
+Interfaces: 'items,daterange,pagination'

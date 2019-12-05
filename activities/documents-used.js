@@ -17,17 +17,40 @@ module.exports = async (activity) => {
 
     if ($.isErrorResponse(activity, response)) return;
 
-    activity.Response.Data.items = [];
+    const items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {
-      activity.Response.Data.items.push(helpers.convertInsightsItem(response.body.value[i]));
+      items.push(helpers.convertInsightsItem(response.body.value[i]));
     }
 
     activity.Response.Data.title = T(activity, 'Recent Files');
 
-    if (activity.Response.Data.items[0] && activity.Response.Data.items[0].containerLink) {
-      activity.Response.Data.link = activity.Response.Data.items[0].containerLink;
+    let count = 0;
+    let readDate = (new Date(new Date().setDate(new Date().getDate() - 30))).toISOString(); // default read date 30 days in the past
+
+    if (activity.Request.Query.readDate) readDate = activity.Request.Query.readDate;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].date > readDate) count++;
+    }
+
+    const pagination = $.pagination(activity);
+
+    activity.Response.Data.items = api.paginateItems(items, pagination);
+
+    if (parseInt(pagination.page) === 1 && count > 0) {
+      const first = items[0];
+
+      activity.Response.Data.link = first.containerLink;
       activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
+      activity.Response.Data.thumbnail = 'https://www.adenin.com/assets/images/wp-images/logo/office-365.svg';
+      activity.Response.Data.actionable = count > 0;
+      activity.Response.Data.value = count;
+      activity.Response.Data.date = first.date;
+      activity.Response.Data.description = count > 1 ? `You have ${count} new recent files.` : 'You have 1 new recent file.';
+      activity.Response.Data.briefing = activity.Response.Data.description + ` The latest is '${first.title}'`;
+    } else {
+      activity.Response.Data.description = T(activity, 'You have no new recent files.');
     }
   } catch (error) {
     api.handleError(activity, error);

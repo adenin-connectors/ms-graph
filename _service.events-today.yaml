@@ -1,3 +1,4 @@
-ServiceName: events-today
-InterfaceName: items
-Description: events-today
+ServiceName: 'events-today'
+InterfaceName: 'status'
+Description: 'Events Today'
+Interfaces: 'items,daterange,pagination'

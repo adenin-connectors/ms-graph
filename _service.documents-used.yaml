@@ -1,4 +1,4 @@
-ServiceName: documents-used
-InterfaceName: items
-Description: documents-used
-Interfaces: 'pagination'
+ServiceName: 'documents-used'
+InterfaceName: 'status'
+Description: 'Recent Documents'
+Interfaces: 'items,daterange,pagination'

@@ -33,14 +33,41 @@ module.exports = async (activity) => {
     }
 
     const deduplicated = Array.from(map.values());
-    const processed = [];
+    const items = [];
 
     for (let i = 0; i < deduplicated.length; i++) {
-      processed.push(convertItem(deduplicated[i]));
+      items.push(convertItem(deduplicated[i]));
     }
 
     activity.Response.Data.title = T(activity, 'Cloud Files');
-    activity.Response.Data.items = processed;
+
+    let count = 0;
+    let readDate = (new Date(new Date().setDate(new Date().getDate() - 30))).toISOString(); // default read date 30 days in the past
+
+    if (activity.Request.Query.readDate) readDate = activity.Request.Query.readDate;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].date > readDate) count++;
+    }
+
+    const pagination = $.pagination(activity);
+
+    activity.Response.Data.items = api.paginateItems(items, pagination);
+
+    if (parseInt(pagination.page) === 1 && count > 0) {
+      const first = items[0];
+
+      activity.Response.Data.link = first.containerLink;
+      activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
+      activity.Response.Data.thumbnail = 'https://www.adenin.com/assets/images/wp-images/logo/office-365.svg';
+      activity.Response.Data.actionable = count > 0;
+      activity.Response.Data.value = count;
+      activity.Response.Data.date = first.date;
+      activity.Response.Data.description = count > 1 ? `You have ${count} new cloud files.` : 'You have 1 new cloud file.';
+      activity.Response.Data.briefing = activity.Response.Data.description + ` The latest is '${first.title}'`;
+    } else {
+      activity.Response.Data.description = T(activity, 'You have no new cloud files.');
+    }
   } catch (error) {
     $.handleError(activity, error);
   }

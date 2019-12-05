@@ -96,15 +96,14 @@ api.handleError = function (activity, error) {
 
 //** filters tickets by provided daterange */
 api.filterByDateRange = function (tasks, dateRange) {
-  let filteredTasks = [];
+  const filteredTasks = [];
   const timeMin = Date.parse(dateRange.startDate);
   const timeMax = Date.parse(dateRange.endDate);
 
   for (let i = 0; i < tasks.length; i++) {
     const createTime = Date.parse(tasks[i].createdDateTime);
-    if (createTime > timeMin && createTime < timeMax) {
-      filteredTasks.push(tasks[i]);
-    }
+
+    if (createTime > timeMin && createTime < timeMax) filteredTasks.push(tasks[i]);
   }
 
   return filteredTasks;
@@ -112,18 +111,19 @@ api.filterByDateRange = function (tasks, dateRange) {
 
 //** paginate items[] based on provided pagination */
 api.paginateItems = function (items, pagination) {
-  let pagiantedItems = [];
+  const paginatedItems = [];
   const pageSize = parseInt(pagination.pageSize);
   const offset = (parseInt(pagination.page) - 1) * pageSize;
 
-  if (offset > items.length) return pagiantedItems;
+  if (offset > items.length) return paginatedItems;
 
   for (let i = offset; i < offset + pageSize; i++) {
-    if (i >= items.length) {
-      break;
-    }
-    pagiantedItems.push(items[i]);
+    if (i >= items.length) break;
+
+    paginatedItems.push(items[i]);
   }
-  return pagiantedItems;
+
+  return paginatedItems;
 };
+
 module.exports = api;
