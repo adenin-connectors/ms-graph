@@ -123,8 +123,11 @@ function convertItem(raw) {
     if (url !== null) item.onlineMeetingUrl = url;
   }
 
+  item.thumbnail = $.avatarLink(raw.organizer.emailAddress.name, raw.organizer.emailAddress.address);
+  item.imageIsAvatar = true;
+
   item.organizer = {
-    avatarProperties: parseAvatarProperties(raw.organizer.emailAddress.name),
+    avatar: item.thumbnail,
     email: raw.organizer.emailAddress.address,
     name: helpers.stripSpecialChars(raw.organizer.emailAddress.name)
   };
@@ -136,7 +139,7 @@ function convertItem(raw) {
       const attendee = {
         email: raw.attendees[j].emailAddress.address,
         name: helpers.stripSpecialChars(raw.attendees[j].emailAddress.name),
-        avatarProperties: parseAvatarProperties(raw.attendees[j].emailAddress.name)
+        avatar: $.avatarLink(raw.attendees[j].emailAddress.name, raw.attendees[j].emailAddress.address)
       };
 
       item.attendees.push(attendee);
@@ -155,29 +158,6 @@ function convertItem(raw) {
   item.showDetails = false;
 
   return item;
-}
-
-const colors = ['blue', 'green', 'orange', 'pink', 'purple', 'red', 'teal'];
-
-function parseAvatarProperties(name) {
-  let colorCode = 1;
-
-  for (let k = 0; k < name.length; k++) {
-    colorCode += name.charCodeAt(k);
-  }
-
-  const names = name.split(' ');
-  let initials = '';
-
-  // stop after two initials
-  for (let k = 0; k < names.length && k < 2; k++) {
-    initials += names[k].charAt(0);
-  }
-
-  return {
-    initials: initials.toUpperCase(),
-    color: colors[colorCode % colors.length]
-  };
 }
 
 const urlRegex = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
