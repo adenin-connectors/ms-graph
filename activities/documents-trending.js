@@ -31,7 +31,10 @@ module.exports = async (activity) => {
     if (activity.Request.Query.readDate) readDate = activity.Request.Query.readDate;
 
     for (let i = 0; i < items.length; i++) {
-      if (items[i].date > readDate) count++;
+      if (items[i].date > readDate) {
+        count++;
+        items[i].isNew = true;
+      }
     }
 
     const pagination = $.pagination(activity);
@@ -43,7 +46,7 @@ module.exports = async (activity) => {
 
       activity.Response.Data.link = first.containerLink;
       activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
-      activity.Response.Data.thumbnail = 'https://www.adenin.com/assets/images/wp-images/logo/office-365.svg';
+      activity.Response.Data.thumbnail = activity.Context.connector.host.connectorLogoUrl;
       activity.Response.Data.actionable = count > 0;
       activity.Response.Data.value = count;
       activity.Response.Data.date = first.date;
