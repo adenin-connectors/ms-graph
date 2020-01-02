@@ -17,12 +17,10 @@ module.exports = {
       description: raw.resourceVisualization.previewText,
       type: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
       link: raw.resourceReference.webUrl,
-      preview: raw.resourceVisualization.previewImageUrl,
       containerTitle: this.stripSpecialChars(raw.resourceVisualization.containerDisplayName),
       containerLink: raw.resourceVisualization.containerWebUrl,
       containerType: raw.resourceVisualization.containerType,
-      date: raw.lastUsed ? (new Date(raw.lastUsed.lastAccessedDateTime)).toISOString() : undefined,
-      raw: raw
+      date: raw.lastUsed ? (new Date(raw.lastUsed.lastAccessedDateTime)).toISOString() : undefined
     };
   }
 };

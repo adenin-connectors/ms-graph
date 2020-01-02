@@ -91,8 +91,7 @@ function convertItem(raw) {
     id: raw.id,
     title: raw.subject,
     link: raw.webLink,
-    isCancelled: raw.isCancelled,
-    raw: raw
+    isCancelled: raw.isCancelled
   };
 
   item.description = raw.bodyPreview.replace(/\r/g, '');

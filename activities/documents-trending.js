@@ -1,5 +1,7 @@
 'use strict';
 
+const crypto = require('crypto');
+
 const api = require('./common/api');
 const helpers = require('./common/helpers');
 
@@ -55,6 +57,10 @@ module.exports = async (activity) => {
     } else {
       activity.Response.Data.description = T(activity, 'You have no new trending files.');
     }
+
+    const hash = crypto.createHash('md5').update(JSON.stringify(activity.Response.Data)).digest('hex');
+
+    activity.Response.Data._hash = hash;
   } catch (error) {
     api.handleError(activity, error);
   }

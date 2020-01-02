@@ -1,5 +1,7 @@
 'use strict';
 
+const crypto = require('crypto');
+
 const api = require('./common/api');
 const helpers = require('./common/helpers');
 
@@ -74,6 +76,10 @@ module.exports = async (activity) => {
   } catch (error) {
     $.handleError(activity, error);
   }
+
+  const hash = crypto.createHash('md5').update(JSON.stringify(activity.Response.Data)).digest('hex');
+
+  activity.Response.Data._hash = hash;
 };
 
 function convertItem(raw) {
@@ -83,7 +89,6 @@ function convertItem(raw) {
     description: raw.resourceVisualization.previewText,
     type: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
     link: raw.resourceReference.webUrl,
-    preview: raw.resourceVisualization.previewImageUrl,
     containerTitle: helpers.stripSpecialChars(raw.resourceVisualization.containerDisplayName).replace('\\', ''),
     containerLink: raw.resourceVisualization.containerWebUrl,
     containerType: raw.resourceVisualization.containerType
@@ -108,8 +113,6 @@ function convertItem(raw) {
     if (lastOpened > twentyFourHoursAgo) item.lastOpened = lastOpened;
     if (lastModified > twoDaysAgo) item.lastModified = lastModified;
   }
-
-  item.raw = raw;
 
   return item;
 }
