@@ -15,13 +15,13 @@ module.exports = async (activity) => {
 
     moment.tz.setDefault(activity.Context.UserTimezone);
 
-    const today = moment().tz(activity.Context.UserTimezone).utc();
+    const today = moment().utc();
     const items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {
       let raw = response.body.value[i];
 
-      const eventDate = moment(raw.start.dateTime).tz(raw.start.timeZone).utc();
+      const eventDate = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
 
       if (raw.recurrence && !today.isSame(eventDate, 'date')) {
         raw = await resolveRecurrence(raw.id);
@@ -29,10 +29,13 @@ module.exports = async (activity) => {
         if (!raw) continue;
       }
 
-      const item = convertItem(raw);
+      const item = convertItem(raw, activity);
 
-      const endDate = moment(raw.end.dateTime).tz(raw.end.timeZone).utc();
+      const endDate = moment.tz(raw.end.dateTime, raw.end.timeZone).tz(activity.Context.UserTimezone).utc();
       const overAnHourAgo = today.clone().minutes(today.minutes() - 61);
+
+      // comment out code that allows multi-day events to pass through until we decide if/how to display them
+      //if (endDate.isAfter(overAnHourAgo) && (today.isSame(eventDate, 'date') || today.isAfter(eventDate, 'date'))) items.push(item);
 
       if (today.isSame(eventDate, 'date') && endDate.isAfter(overAnHourAgo)) items.push(item);
     }
@@ -84,80 +87,80 @@ module.exports = async (activity) => {
       api.handleError(activity, error);
     }
   }
-};
 
-function convertItem(raw) {
-  const item = {
-    id: raw.id,
-    title: raw.subject,
-    link: raw.webLink,
-    isCancelled: raw.isCancelled
-  };
-
-  item.description = raw.bodyPreview.replace(/\r/g, '');
-  item.description = item.description.replace(/\n/g, '<br/>');
-
-  item.date = moment(raw.start.dateTime).tz(raw.start.timeZone).utc().format();
-  item.duration = moment.duration(moment(raw.end.dateTime).diff(moment(raw.start.dateTime))).humanize();
-
-  if (raw.location && raw.location.coordinates && raw.location.coordinates.latitude) {
-    item.location = {
-      link: `https://www.google.com/maps/search/?api=1&query=${raw.location.coordinates.latitude},${raw.location.coordinates.longitude}`,
-      title: raw.location.displayName
+  function convertItem(raw) {
+    const item = {
+      id: raw.id,
+      title: raw.subject,
+      link: raw.webLink,
+      isCancelled: raw.isCancelled
     };
-  } else if (raw.location.displayName && !raw.onlineMeetingUrl) {
-    const url = parseUrl(raw.location.displayName);
 
-    if (url !== null) {
-      item.onlineMeetingUrl = url;
+    item.description = raw.bodyPreview.replace(/\r/g, '');
+    item.description = item.description.replace(/\n/g, '<br/>');
+
+    item.date = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).format();
+    item.duration = moment.duration(moment(raw.end.dateTime).diff(moment(raw.start.dateTime))).humanize();
+
+    if (raw.location && raw.location.coordinates && raw.location.coordinates.latitude) {
+      item.location = {
+        link: `https://www.google.com/maps/search/?api=1&query=${raw.location.coordinates.latitude},${raw.location.coordinates.longitude}`,
+        title: raw.location.displayName
+      };
+    } else if (raw.location.displayName && !raw.onlineMeetingUrl) {
+      const url = parseUrl(raw.location.displayName);
+
+      if (url !== null) {
+        item.onlineMeetingUrl = url;
+        item.location = null;
+      }
+    } else {
       item.location = null;
     }
-  } else {
-    item.location = null;
-  }
 
-  if (!item.onlineMeetingUrl) {
-    const url = parseUrl(item.description);
+    if (!item.onlineMeetingUrl) {
+      const url = parseUrl(item.description);
 
-    if (url !== null) item.onlineMeetingUrl = url;
-  }
-
-  item.thumbnail = $.avatarLink(raw.organizer.emailAddress.name, raw.organizer.emailAddress.address);
-  item.imageIsAvatar = true;
-
-  item.organizer = {
-    avatar: item.thumbnail,
-    email: raw.organizer.emailAddress.address,
-    name: helpers.stripSpecialChars(raw.organizer.emailAddress.name)
-  };
-
-  item.attendees = [];
-
-  if (raw.attendees.length > 0) {
-    for (let j = 0; j < raw.attendees.length; j++) {
-      const attendee = {
-        email: raw.attendees[j].emailAddress.address,
-        name: helpers.stripSpecialChars(raw.attendees[j].emailAddress.name),
-        avatar: $.avatarLink(raw.attendees[j].emailAddress.name, raw.attendees[j].emailAddress.address)
-      };
-
-      item.attendees.push(attendee);
+      if (url !== null) item.onlineMeetingUrl = url;
     }
-  } else {
-    item.attendees = null;
-  }
 
-  if (raw.responseStatus.response !== 'none') {
-    item.response = {
-      status: raw.responseStatus.response === 'accepted' ? 'accepted' : 'declined',
-      date: raw.responseStatus.time
+    item.thumbnail = $.avatarLink(raw.organizer.emailAddress.name, raw.organizer.emailAddress.address);
+    item.imageIsAvatar = true;
+
+    item.organizer = {
+      avatar: item.thumbnail,
+      email: raw.organizer.emailAddress.address,
+      name: helpers.stripSpecialChars(raw.organizer.emailAddress.name)
     };
+
+    item.attendees = [];
+
+    if (raw.attendees.length > 0) {
+      for (let j = 0; j < raw.attendees.length; j++) {
+        const attendee = {
+          email: raw.attendees[j].emailAddress.address,
+          name: helpers.stripSpecialChars(raw.attendees[j].emailAddress.name),
+          avatar: $.avatarLink(raw.attendees[j].emailAddress.name, raw.attendees[j].emailAddress.address)
+        };
+
+        item.attendees.push(attendee);
+      }
+    } else {
+      item.attendees = null;
+    }
+
+    if (raw.responseStatus.response !== 'none') {
+      item.response = {
+        status: raw.responseStatus.response === 'accepted' ? 'accepted' : 'declined',
+        date: raw.responseStatus.time
+      };
+    }
+
+    item.showDetails = false;
+
+    return item;
   }
-
-  item.showDetails = false;
-
-  return item;
-}
+};
 
 const urlRegex = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
 
