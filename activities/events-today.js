@@ -156,6 +156,12 @@ module.exports = async (activity) => {
           avatar: $.avatarLink(raw.attendees[j].emailAddress.name, raw.attendees[j].emailAddress.address)
         };
 
+        if (attendee.email === item.organizer.email) {
+          attendee.response = 'organizer';
+        } else if (raw.attendees[j].status.response !== 'none') {
+          attendee.response = raw.attendees[j].status.response === 'accepted' ? 'accepted' : 'declined';
+        }
+
         item.attendees.push(attendee);
       }
     } else {
