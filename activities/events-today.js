@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const moment = require('moment-timezone');
 
 const api = require('./common/api');
@@ -15,15 +16,18 @@ module.exports = async (activity) => {
 
     moment.tz.setDefault(activity.Context.UserTimezone);
 
-    const today = moment().utc();
+    const now = moment().utc();
     const items = [];
+
+    let count = 0;
+    let firstFutureIndex = null;
 
     for (let i = 0; i < response.body.value.length; i++) {
       let raw = response.body.value[i];
 
       const eventDate = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
 
-      if (raw.recurrence && !today.isSame(eventDate, 'date')) {
+      if (raw.recurrence && !now.isSame(eventDate, 'date')) {
         raw = await resolveRecurrence(raw.id);
 
         if (!raw) continue;
@@ -32,33 +36,41 @@ module.exports = async (activity) => {
       const item = convertItem(raw, activity);
 
       const endDate = moment.tz(raw.end.dateTime, raw.end.timeZone).tz(activity.Context.UserTimezone).utc();
-      const overAnHourAgo = today.clone().minutes(today.minutes() - 61);
+      const overAnHourAgo = now.clone().minutes(now.minutes() - 61);
 
       // comment out code that allows multi-day events to pass through until we decide if/how to display them
       //if (endDate.isAfter(overAnHourAgo) && (today.isSame(eventDate, 'date') || today.isAfter(eventDate, 'date'))) items.push(item);
 
-      if (today.isSame(eventDate, 'date') && endDate.isAfter(overAnHourAgo)) items.push(item);
+      if (now.isSame(eventDate, 'date') && endDate.isAfter(overAnHourAgo)) {
+        items.push(item);
+
+        if (eventDate.isAfter(now)) {
+          count++;
+
+          if (!firstFutureIndex) firstFutureIndex = items.length - 1;
+        }
+      }
     }
 
-    const value = items.length;
-
     const pagination = $.pagination(activity);
+    const paginatedItems = api.paginateItems(items, pagination);
 
-    activity.Response.Data.items = api.paginateItems(items, pagination);
+    activity.Response.Data.items = paginatedItems;
+    activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(paginatedItems)).digest('hex');
 
     if (parseInt(pagination.page) === 1) {
       activity.Response.Data.title = T(activity, 'Events Today');
       activity.Response.Data.link = 'https://outlook.office365.com/mail/inbox';
       activity.Response.Data.linkLabel = T(activity, 'All events');
       activity.Response.Data.thumbnail = 'https://www.adenin.com/assets/images/wp-images/logo/office-365.svg';
-      activity.Response.Data.actionable = value > 0;
+      activity.Response.Data.actionable = count > 0;
 
-      if (value > 0) {
-        const first = activity.Response.Data.items[0];
+      if (count > 0) {
+        const first = activity.Response.Data.items[firstFutureIndex];
 
-        activity.Response.Data.value = value;
+        activity.Response.Data.value = paginatedItems.length;
         activity.Response.Data.date = first.date;
-        activity.Response.Data.description = value > 1 ? `You have ${value} events today.` : 'You have 1 event today.';
+        activity.Response.Data.description = paginatedItems.length > 1 ? `You have ${paginatedItems.length} events today.` : 'You have 1 event today.';
 
         const when = moment().to(moment(first.date));
 
@@ -93,7 +105,8 @@ module.exports = async (activity) => {
       id: raw.id,
       title: raw.subject,
       link: raw.webLink,
-      isCancelled: raw.isCancelled
+      isCancelled: raw.isCancelled,
+      isRecurring: raw.recurrence ? true : false
     };
 
     item.description = raw.bodyPreview.replace(/\r/g, '');
