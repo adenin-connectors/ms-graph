@@ -113,6 +113,7 @@ module.exports = async (activity) => {
     item.description = item.description.replace(/\n/g, '<br/>');
 
     item.date = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).format();
+    item.endDate = moment.tz(raw.end.dateTime, raw.end.timeZone).tz(activity.Context.UserTimezone).format();
     item.duration = moment.duration(moment(raw.end.dateTime).diff(moment(raw.start.dateTime))).humanize();
 
     if (raw.location && raw.location.coordinates && raw.location.coordinates.latitude) {
