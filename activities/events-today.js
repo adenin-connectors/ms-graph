@@ -72,9 +72,7 @@ module.exports = async (activity) => {
         activity.Response.Data.date = first.date;
         activity.Response.Data.description = paginatedItems.length > 1 ? `You have ${paginatedItems.length} events today.` : 'You have 1 event today.';
 
-        const when = moment().to(moment(first.date));
-
-        activity.Response.Data.briefing = activity.Response.Data.description + ` The next is '${first.title}' ${when}`;
+        activity.Response.Data.briefing = activity.Response.Data.description + ` The next is '${first.title}' at ${moment(first.date).format('LT')}`;
       } else {
         activity.Response.Data.description = T(activity, 'You have no events today.');
       }
@@ -169,14 +167,21 @@ module.exports = async (activity) => {
       item.attendees = null;
     }
 
-    if (raw.responseStatus.response !== 'none') {
+    switch (raw.responseStatus.response) {
+    case 'none':
+      break;
+    case 'organizer':
+      item.response = {
+        status: 'organizer'
+      };
+
+      break;
+    default:
       item.response = {
         status: raw.responseStatus.response === 'accepted' ? 'accepted' : 'declined',
         date: raw.responseStatus.time
       };
     }
-
-    item.showDetails = false;
 
     return item;
   }
