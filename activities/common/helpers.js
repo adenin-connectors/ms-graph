@@ -4,6 +4,8 @@ const specialCharRegex = /[^a-zA-z\s]/;
 
 module.exports = {
   stripSpecialChars: (input) => {
+    if (!input) return input;
+
     const index = input.search(specialCharRegex);
 
     if (index === -1) return input;
