@@ -6,6 +6,11 @@ trigger:
   paths:
     exclude:
     - docs/*
+    - TeamsApp.zip
+    - node_modules.zip
+    - .gcloudignore
+    - .gitignore
+    - app.js
 
 pool:
   vmImage: 'vs2017-win2016'
