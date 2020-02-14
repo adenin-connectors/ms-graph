@@ -24,13 +24,14 @@ module.exports = async (activity) => {
 
     for (let i = 0; i < response.body.value.length; i++) {
       let raw = response.body.value[i];
-
-      const eventDate = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
+      let eventDate = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
 
       if (raw.recurrence && !now.isSame(eventDate, 'date')) {
         raw = await resolveRecurrence(raw.id);
 
         if (!raw) continue;
+
+        eventDate = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
       }
 
       const item = convertItem(raw, activity);
