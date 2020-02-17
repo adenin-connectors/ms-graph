@@ -141,23 +141,25 @@ module.exports = async (activity) => {
       if (url !== null) item.onlineMeetingUrl = url;
     }
 
-    item.thumbnail = $.avatarLink(raw.organizer.emailAddress.name, raw.organizer.emailAddress.address);
-    item.imageIsAvatar = true;
+    const organizerName = helpers.stripSpecialChars(raw.organizer.emailAddress.name);
 
+    item.thumbnail = $.avatarLink(organizerName, raw.organizer.emailAddress.address);
+    item.imageIsAvatar = true;
     item.organizer = {
       avatar: item.thumbnail,
       email: raw.organizer.emailAddress.address,
-      name: helpers.stripSpecialChars(raw.organizer.emailAddress.name)
+      name: organizerName
     };
 
     item.attendees = [];
 
     if (raw.attendees.length > 0) {
       for (let j = 0; j < raw.attendees.length; j++) {
+        const attendeeName = helpers.stripSpecialChars(raw.attendees[j].emailAddress.name);
         const attendee = {
           email: raw.attendees[j].emailAddress.address,
-          name: helpers.stripSpecialChars(raw.attendees[j].emailAddress.name),
-          avatar: $.avatarLink(raw.attendees[j].emailAddress.name, raw.attendees[j].emailAddress.address)
+          name: attendeeName,
+          avatar: $.avatarLink(attendeeName, raw.attendees[j].emailAddress.address)
         };
 
         if (attendee.email === item.organizer.email) {
