@@ -65,6 +65,7 @@ module.exports = async (activity) => {
       activity.Response.Data.linkLabel = T(activity, 'All events');
       activity.Response.Data.thumbnail = 'https://www.adenin.com/assets/images/wp-images/logo/office-365.svg';
       activity.Response.Data.actionable = count > 0;
+      activity.Response.Data.integration = 'Outlook';
 
       if (count > 0) {
         const first = activity.Response.Data.items[firstFutureIndex];
