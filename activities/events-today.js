@@ -10,7 +10,7 @@ module.exports = async (activity) => {
   try {
     api.initialize(activity);
 
-    const response = await api('/v1.0/me/events');
+    const response = await api('/v1.0/me/events?$top=999');
 
     if ($.isErrorResponse(activity, response)) return;
 
