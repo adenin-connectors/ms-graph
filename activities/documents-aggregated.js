@@ -9,11 +9,41 @@ module.exports = async (activity) => {
   try {
     api.initialize(activity);
 
+    const action = $.getObjPath(activity, 'Request.Data.args.atAgentAction');
     const promises = [];
 
-    promises.push(api('/beta/me/insights/shared'));
-    promises.push(api('/beta/me/insights/trending'));
-    promises.push(api('/beta/me/insights/used'));
+    const excludeSites = 'ResourceVisualization/Type ne \'Web\' and ResourceVisualization/Type ne \'spsite\'';
+    const excludeMail = 'ResourceVisualization/ContainerType ne \'Mail\'';
+
+    const onlySites = 'ResourceVisualization/Type eq \'Web\' and ResourceVisualization/Type eq \'spsite\'';
+    const onlyMail = 'ResourceVisualization/ContainerType eq \'Mail\'';
+
+    switch (action) {
+    default:
+    case 'used':
+      promises.push(api(`/beta/me/insights/used?$filter=${excludeSites} and ${excludeMail}`));
+      activity.Response.Data._tab = 0;
+      break;
+    case 'trending':
+      promises.push(api(`/beta/me/insights/trending?$filter=${excludeSites} and ${excludeMail}`));
+      activity.Response.Data._tab = 1;
+      break;
+    case 'shared':
+      promises.push(api(`/beta/me/insights/shared?$filter=${excludeSites} and ${excludeMail}`));
+      activity.Response.Data._tab = 2;
+      break;
+    case 'email':
+      promises.push(api(`/beta/me/insights/used?$filter=${onlyMail}`));
+      promises.push(api(`/beta/me/insights/shared?$filter=${onlyMail}`));
+      promises.push(api(`/beta/me/insights/trending?$filter=${onlyMail}`));
+      activity.Response.Data._tab = 3;
+      break;
+    case 'sites':
+      promises.push(api(`/beta/me/insights/used?$filter=${onlySites}`));
+      promises.push(api(`/beta/me/insights/shared?$filter=${onlySites}`));
+      promises.push(api(`/beta/me/insights/trending?$filter=${onlySites}`));
+      break;
+    }
 
     const responses = await Promise.all(promises);
     const map = new Map();
@@ -23,7 +53,7 @@ module.exports = async (activity) => {
 
       if ($.isErrorResponse(activity, response)) return;
 
-      for (let j = 0; j < response.body.value.length && j < 2; j++) {
+      for (let j = 0; j < response.body.value.length; j++) {
         const item = response.body.value[j];
 
         if (map.has(item.id)) {
@@ -59,17 +89,20 @@ module.exports = async (activity) => {
 
     activity.Response.Data.items = api.paginateItems(items, pagination);
 
-    if (parseInt(pagination.page) === 1 && count > 0) {
+    if (parseInt(pagination.page) === 1) {
       const first = items[0];
 
       activity.Response.Data.link = first.containerLink;
       activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
       activity.Response.Data.thumbnail = activity.Context.connector.host.connectorLogoUrl;
       activity.Response.Data.actionable = count > 0;
-      activity.Response.Data.value = count;
-      activity.Response.Data.date = first.date;
-      activity.Response.Data.description = count > 1 ? `You have ${count} new cloud files.` : 'You have 1 new cloud file.';
-      activity.Response.Data.briefing = activity.Response.Data.description + ` The latest is '${first.title}'`;
+
+      if (count > 0) {
+        activity.Response.Data.value = count;
+        activity.Response.Data.date = first.date;
+        activity.Response.Data.description = count > 1 ? `You have ${count} new cloud files.` : 'You have 1 new cloud file.';
+        activity.Response.Data.briefing = activity.Response.Data.description + ` The latest is '${first.title}'`;
+      }
     } else {
       activity.Response.Data.description = T(activity, 'You have no new cloud files.');
     }
