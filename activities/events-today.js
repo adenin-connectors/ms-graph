@@ -46,6 +46,8 @@ module.exports = async (activity) => {
 
       if (!raw) continue;
 
+      raw.recurrence = true;
+
       const item = processEvent(raw);
 
       if (!item) continue;
