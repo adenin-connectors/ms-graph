@@ -119,7 +119,7 @@ function convertItem(raw) {
   const item = {
     id: raw.id,
     title: raw.resourceVisualization.title,
-    description: raw.resourceVisualization.previewText,
+    description: helpers.stripNonAscii(raw.resourceVisualization.previewText),
     type: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
     link: raw.resourceReference.webUrl,
     containerTitle: helpers.stripSpecialChars(raw.resourceVisualization.containerDisplayName).replace('\\', ''),
