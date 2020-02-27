@@ -13,47 +13,33 @@ module.exports = async (activity) => {
   try {
     api.initialize(activity);
 
-    const response = await api('/v1.0/me/events?$top=999');
+    const response = await api(`/v1.0/me/calendarView?startDateTime=${now.clone().startOf('day').format()}&endDateTime=${now.clone().endOf('day').format()}`);
 
     if ($.isErrorResponse(activity, response)) return;
 
     let items = [];
     let pastCount = 0;
 
-    const recurringPromises = [];
-
     for (let i = 0; i < response.body.value.length; i++) {
       const raw = response.body.value[i];
-      const eventDate = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
 
-      if (raw.recurrence && !now.isSame(eventDate, 'date')) {
-        recurringPromises.push(resolveRecurrence(raw.id));
-        continue;
+      const startTime = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
+      const endTime = moment.tz(raw.end.dateTime, raw.end.timeZone).tz(activity.Context.UserTimezone).utc();
+
+      const item = convertItem(raw, activity);
+      const overAnHourAgo = now.clone().minutes(now.minutes() - 61);
+
+      // comment out code that allows multi-day events to pass through until we decide if/how to display them
+      //if (endDate.isAfter(overAnHourAgo) && (today.isSame(eventDate, 'date') || today.isAfter(eventDate, 'date'))) items.push(item);
+
+      if (now.isSame(startTime, 'date') && endTime.isAfter(overAnHourAgo)) {
+        if (endTime.isBefore(now)) {
+          pastCount++;
+          item.isPast = true;
+        }
+
+        items.push(item);
       }
-
-      const item = processEvent(raw);
-
-      if (!item) continue;
-      if (item.isPast) pastCount++;
-
-      items.push(item);
-    }
-
-    const recurringEvents = await Promise.all(recurringPromises);
-
-    for (let i = 0; i < recurringEvents.length; i++) {
-      const raw = recurringEvents[i];
-
-      if (!raw) continue;
-
-      raw.recurrence = true;
-
-      const item = processEvent(raw);
-
-      if (!item) continue;
-      if (item.isPast) pastCount++;
-
-      items.push(item);
     }
 
     items = items.sort($.compare.dateAscending);
@@ -89,43 +75,6 @@ module.exports = async (activity) => {
     }
   } catch (error) {
     api.handleError(activity, error);
-  }
-
-  function processEvent(raw) {
-    const eventDate = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
-
-    const item = convertItem(raw, activity);
-
-    const endDate = moment.tz(raw.end.dateTime, raw.end.timeZone).tz(activity.Context.UserTimezone).utc();
-    const overAnHourAgo = now.clone().minutes(now.minutes() - 61);
-
-    // comment out code that allows multi-day events to pass through until we decide if/how to display them
-    //if (endDate.isAfter(overAnHourAgo) && (today.isSame(eventDate, 'date') || today.isAfter(eventDate, 'date'))) items.push(item);
-
-    if (now.isSame(eventDate, 'date') && endDate.isAfter(overAnHourAgo)) {
-      if (endDate.isBefore(now)) {
-        item.isPast = true;
-      }
-
-      return item;
-    }
-  }
-
-  async function resolveRecurrence(eventId) {
-    try {
-      const start = moment().utc().startOf('day').format();
-      const end = moment().utc().endOf('day').format();
-
-      const endpoint = `/v1.0/me/events/${eventId}/instances?startDateTime=${start}&endDateTime=${end}`;
-
-      const response = await api(endpoint);
-
-      if ($.isErrorResponse(activity, response)) return null;
-
-      return response.body.value[0]; // can only recur once per day
-    } catch (error) {
-      api.handleError(activity, error);
-    }
   }
 
   function convertItem(raw) {
