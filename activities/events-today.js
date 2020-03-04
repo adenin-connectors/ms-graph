@@ -19,24 +19,26 @@ module.exports = async (activity) => {
 
     let items = [];
     let pastCount = 0;
+    let allDayCount = 0;
 
     for (let i = 0; i < response.body.value.length; i++) {
       const raw = response.body.value[i];
 
-      const startTime = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
-      const endTime = moment.tz(raw.end.dateTime, raw.end.timeZone).tz(activity.Context.UserTimezone).utc();
+      if (raw.isCancelled) continue;
 
       const item = convertItem(raw, activity);
-      const overAnHourAgo = now.clone().minutes(now.minutes() - 61);
 
-      // comment out code that allows multi-day events to pass through until we decide if/how to display them
-      //if (endDate.isAfter(overAnHourAgo) && (today.isSame(eventDate, 'date') || today.isAfter(eventDate, 'date'))) items.push(item);
+      const startTime = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).utc();
+      const endTime = moment.tz(raw.end.dateTime, raw.end.timeZone).tz(activity.Context.UserTimezone).utc();
+      const halfAnHourAgo = now.clone().minutes(now.minutes() - 30);
 
-      if (now.isSame(startTime, 'date') && endTime.isAfter(overAnHourAgo)) {
+      if ((now.isSame(startTime, 'date') || item.isAllDay) && endTime.isAfter(halfAnHourAgo)) {
         if (endTime.isBefore(now)) {
           pastCount++;
           item.isPast = true;
         }
+
+        if (item.isAllDay) allDayCount++;
 
         items.push(item);
       }
@@ -60,6 +62,7 @@ module.exports = async (activity) => {
       activity.Response.Data.actionable = value > 0;
       activity.Response.Data.integration = 'Outlook';
       activity.Response.Data.pastCount = pastCount;
+      activity.Response.Data.allDayCount = allDayCount;
 
       if (value > 0) {
         const first = paginatedItems[pastCount];
@@ -91,7 +94,12 @@ module.exports = async (activity) => {
 
     item.date = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).format();
     item.endDate = moment.tz(raw.end.dateTime, raw.end.timeZone).tz(activity.Context.UserTimezone).format();
-    item.duration = moment.duration(moment(raw.end.dateTime).diff(moment(raw.start.dateTime))).humanize();
+
+    const duration = moment.duration(moment(raw.end.dateTime).diff(moment(raw.start.dateTime)));
+
+    if (duration.asDays() >= 1) item.isAllDay = true;
+
+    item.duration = duration.humanize();
 
     if (raw.location && raw.location.coordinates && raw.location.coordinates.latitude) {
       item.location = {
@@ -110,7 +118,7 @@ module.exports = async (activity) => {
     }
 
     if (!item.onlineMeetingUrl) {
-      const url = parseUrl(item.description);
+      const url = parseUrl(raw.body.content);
 
       if (url !== null) item.onlineMeetingUrl = url;
     }
@@ -177,6 +185,7 @@ function parseUrl(text) {
     let url = text.substring(text.search(urlRegex), text.length);
 
     if (url.indexOf(' ') !== -1) url = url.substring(0, url.indexOf(' '));
+    if (url.indexOf('"') !== -1) url = url.substring(0, url.indexOf('"'));
     if (!url.match(/^[a-zA-Z]+:\/\//)) url = 'https://' + url;
 
     return url;
