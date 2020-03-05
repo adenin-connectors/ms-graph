@@ -12,6 +12,7 @@ module.exports = {
 
     return input.substring(0, index).trim();
   },
+  stripNonAscii: (input) => input.replace(/[^ -~]+/g, ''),
   convertInsightsItem: function (raw) {
     return {
       id: raw.id,
