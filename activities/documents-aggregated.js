@@ -5,48 +5,59 @@ const crypto = require('crypto');
 const api = require('./common/api');
 const helpers = require('./common/helpers');
 
+const excludeSites = 'ResourceVisualization/Type ne \'Web\' and ResourceVisualization/Type ne \'spsite\'';
+const excludeMail = 'ResourceVisualization/ContainerType ne \'Mail\'';
+const onlyMail = 'ResourceVisualization/ContainerType eq \'Mail\' and ResourceVisualization/Type ne \'Text\' and ResourceVisualization/Type ne \'Image\'';
+
 module.exports = async (activity) => {
   try {
     api.initialize(activity);
 
-    const action = $.getObjPath(activity, 'Request.Data.args.atAgentAction');
+    activity.Request.Query.pageSize = 10;
+
+    const pagination = $.pagination(activity);
+    const top = pagination.pageSize;
+    const skip = (pagination.page - 1) * pagination.pageSize;
+
+    let action = $.getObjPath(activity, 'Request.Data.args.atAgentAction');
+
+    if (action === 'nextpage') action = activity.Request.Data.args._tab;
+
     const promises = [];
 
-    const excludeSites = 'ResourceVisualization/Type ne \'Web\' and ResourceVisualization/Type ne \'spsite\'';
-    const excludeMail = 'ResourceVisualization/ContainerType ne \'Mail\'';
-
-    const onlySites = 'ResourceVisualization/Type eq \'Web\' and ResourceVisualization/Type eq \'spsite\'';
-    const onlyMail = 'ResourceVisualization/ContainerType eq \'Mail\'';
-
     switch (action) {
-    default:
-    case 'used':
-      promises.push(api(`/beta/me/insights/used?$filter=${excludeSites} and ${excludeMail}`));
-      activity.Response.Data._tab = 0;
-      break;
+    case 1:
     case 'trending':
-      promises.push(api(`/beta/me/insights/trending?$filter=${excludeSites} and ${excludeMail}`));
+      promises.push(api(`/v1.0/me/insights/trending?$top=${top}&skip=${skip}&$filter=${excludeSites} and ${excludeMail}`));
       activity.Response.Data._tab = 1;
       break;
+    case 2:
     case 'shared':
-      promises.push(api(`/beta/me/insights/shared?$filter=${excludeSites} and ${excludeMail}`));
+      promises.push(api(`/v1.0/me/insights/shared?$top=${top}&skip=${skip}&$filter=${excludeSites} and ${excludeMail}`));
       activity.Response.Data._tab = 2;
       break;
+    case 3:
     case 'email':
-      promises.push(api(`/beta/me/insights/used?$filter=${onlyMail}`));
-      promises.push(api(`/beta/me/insights/shared?$filter=${onlyMail}`));
-      promises.push(api(`/beta/me/insights/trending?$filter=${onlyMail}`));
+      promises.push(api(`/v1.0/me/insights/used?$top=${top}&skip=${skip}&$filter=${onlyMail}`));
+      promises.push(api(`/v1.0/me/insights/shared?$top=${top}&skip=${skip}&$filter=${onlyMail}`));
+      promises.push(api(`/v1.0/me/insights/trending?$top=${top}&skip=${skip}&$filter=${onlyMail}`));
       activity.Response.Data._tab = 3;
       break;
-    case 'sites':
-      promises.push(api(`/beta/me/insights/used?$filter=${onlySites}`));
-      promises.push(api(`/beta/me/insights/shared?$filter=${onlySites}`));
-      promises.push(api(`/beta/me/insights/trending?$filter=${onlySites}`));
+    default:
+    case 0:
+    case 'used':
+      promises.push(api(`/v1.0/me/insights/used?$top=${top}&skip=${skip}&$filter=${excludeSites} and ${excludeMail}`));
+      activity.Response.Data._tab = 0;
       break;
     }
 
     const responses = await Promise.all(promises);
     const map = new Map();
+
+    let count = 0;
+    let readDate = (new Date(new Date().setDate(new Date().getDate() - 30))).toISOString(); // default read date 30 days in the past
+
+    if (activity.Request.Query.readDate) readDate = activity.Request.Query.readDate;
 
     for (let i = 0; i < responses.length; i++) {
       const response = responses[i];
@@ -54,7 +65,12 @@ module.exports = async (activity) => {
       if ($.isErrorResponse(activity, response)) return;
 
       for (let j = 0; j < response.body.value.length; j++) {
-        const item = response.body.value[j];
+        const item = convertItem(response.body.value[j]);
+
+        if (item.date > readDate) {
+          count++;
+          item.isNew = true;
+        }
 
         if (map.has(item.id)) {
           map.set(item.id, Object.assign(map.get(item.id), item));
@@ -64,30 +80,10 @@ module.exports = async (activity) => {
       }
     }
 
-    const deduplicated = Array.from(map.values());
-    const items = [];
-
-    for (let i = 0; i < deduplicated.length; i++) {
-      items.push(convertItem(deduplicated[i]));
-    }
+    const items = Array.from(map.values());
 
     activity.Response.Data.title = T(activity, 'Cloud Files');
-
-    let count = 0;
-    let readDate = (new Date(new Date().setDate(new Date().getDate() - 30))).toISOString(); // default read date 30 days in the past
-
-    if (activity.Request.Query.readDate) readDate = activity.Request.Query.readDate;
-
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].date > readDate) {
-        count++;
-        items[i].isNew = true;
-      }
-    }
-
-    const pagination = $.pagination(activity);
-
-    activity.Response.Data.items = api.paginateItems(items, pagination);
+    activity.Response.Data.items = items;
 
     if (parseInt(pagination.page) === 1) {
       const first = items[0];
@@ -102,9 +98,9 @@ module.exports = async (activity) => {
         activity.Response.Data.date = first.date;
         activity.Response.Data.description = count > 1 ? `You have ${count} new cloud files.` : 'You have 1 new cloud file.';
         activity.Response.Data.briefing = activity.Response.Data.description + ` The latest is '${first.title}'`;
+      } else {
+        activity.Response.Data.description = T(activity, 'You have no new cloud files.');
       }
-    } else {
-      activity.Response.Data.description = T(activity, 'You have no new cloud files.');
     }
   } catch (error) {
     $.handleError(activity, error);
