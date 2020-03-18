@@ -7,7 +7,7 @@ const helpers = require('./common/helpers');
 
 const excludeSites = 'ResourceVisualization/Type ne \'Web\' and ResourceVisualization/Type ne \'spsite\'';
 const excludeMail = 'ResourceVisualization/ContainerType ne \'Mail\'';
-const onlyMail = 'ResourceVisualization/ContainerType eq \'Mail\' and ResourceVisualization/Type ne \'Text\' and ResourceVisualization/Type ne \'Image\'';
+const onlyMail = 'ResourceVisualization/ContainerType eq \'Mail\' and ResourceVisualization/Type ne \'Text\' and ResourceVisualization/Type ne \'Image\' and ResourceVisualization/Type ne \'Other\'';
 
 module.exports = async (activity) => {
   try {
@@ -54,11 +54,6 @@ module.exports = async (activity) => {
     const responses = await Promise.all(promises);
     const map = new Map();
 
-    let count = 0;
-    let readDate = (new Date(new Date().setDate(new Date().getDate() - 30))).toISOString(); // default read date 30 days in the past
-
-    if (activity.Request.Query.readDate) readDate = activity.Request.Query.readDate;
-
     for (let i = 0; i < responses.length; i++) {
       const response = responses[i];
 
@@ -66,11 +61,6 @@ module.exports = async (activity) => {
 
       for (let j = 0; j < response.body.value.length; j++) {
         const item = convertItem(response.body.value[j]);
-
-        if (item.date > readDate) {
-          count++;
-          item.isNew = true;
-        }
 
         if (map.has(item.id)) {
           map.set(item.id, Object.assign(map.get(item.id), item));
@@ -86,6 +76,9 @@ module.exports = async (activity) => {
     activity.Response.Data.items = items;
 
     if (parseInt(pagination.page) === 1) {
+      activity.Response.Data.items[0]._isInitial = true;
+
+      const count = items.length;
       const first = items[0];
 
       activity.Response.Data.link = first.containerLink;
