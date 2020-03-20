@@ -181,15 +181,24 @@ const urlRegex = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@
 function parseUrl(text) {
   text = text.replace(/\n|\r/g, ' ');
 
-  if (text.search(urlRegex) !== -1) {
-    let url = text.substring(text.search(urlRegex), text.length);
+  const matches = text.match(urlRegex);
 
-    if (url.indexOf(' ') !== -1) url = url.substring(0, url.indexOf(' '));
-    if (url.indexOf('"') !== -1) url = url.substring(0, url.indexOf('"'));
-    if (!url.match(/^[a-zA-Z]+:\/\//)) url = 'https://' + url;
+  if (!matches.length) return null;
 
-    return url;
+  for (let i = 0; i < matches.length; i++) {
+    const match = matches[i];
+
+    if (
+      match.includes('webex') ||
+      match.includes('gotomeet') ||
+      match.includes('gotomeeting') ||
+      match.includes('zoom') ||
+      match.includes('skype') ||
+      match.includes('teams')
+    ) {
+      return match;
+    }
   }
 
-  return null;
+  return matches[0];
 }
