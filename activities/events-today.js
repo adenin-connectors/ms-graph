@@ -184,7 +184,7 @@ function parseUrl(text) {
 
   const matches = text.match(urlRegex);
 
-  if (!matches.length) return null;
+  if (!matches || !matches.length) return null;
 
   for (let i = 0; i < matches.length; i++) {
     const match = matches[i];
