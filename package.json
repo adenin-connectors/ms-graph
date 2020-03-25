@@ -19,7 +19,7 @@
     "@adenin/cf-logger": "^1.7.1",
     "decache": "^4.5.1",
     "koa": "^2.11.0",
-    "koa-bodyparser": "^4.2.1",
+    "koa-bodyparser": "^4.3.0",
     "koa-router": "^7.4.0",
     "nodemon": "^2.0.2"
   }
