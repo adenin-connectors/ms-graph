@@ -73,7 +73,7 @@ module.exports = async (activity) => {
 
         activity.Response.Data.briefing = activity.Response.Data.description + ` The next is '${first.title}' at ${moment(first.date).format('LT')}`;
       } else {
-        activity.Response.Data.date = now.startOf('day');
+        activity.Response.Data.date = now.startOf('day').format();
         activity.Response.Data.description = T(activity, 'You have no events today.');
       }
     }
