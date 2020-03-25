@@ -177,7 +177,7 @@ module.exports = async (activity) => {
   }
 };
 
-const urlRegex = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+const urlRegex = /(https?)\:\/\/[A-Za-z0-9\.\-]+(\/[A-Za-z0-9\?\&\=;\+!'\(\)\*\-\._~%]*)*/gi;
 
 function parseUrl(text) {
   text = text.replace(/\n|\r/g, ' ');
