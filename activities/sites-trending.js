@@ -37,8 +37,6 @@ module.exports = async (activity) => {
         imageIsAvatar: true
       });
     }
-
-    activity.Response.Data.items.pop();
   } catch (error) {
     $.handleError(activity, error);
   }
