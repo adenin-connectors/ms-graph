@@ -37,6 +37,14 @@ module.exports = async (activity) => {
         imageIsAvatar: true
       });
     }
+
+    const remainder = 3 - (activity.Response.Data.items.length % 3);
+
+    activity.Response.Data._remainders = [];
+
+    for (let i = 1; i <= remainder; i++) {
+      activity.Response.Data._remainders.push({});
+    }
   } catch (error) {
     $.handleError(activity, error);
   }
