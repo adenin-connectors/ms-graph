@@ -1,6 +1,7 @@
 'use strict';
 
 const api = require('./common/api');
+const helpers = require('./common/helpers');
 
 const onlySites = 'ResourceVisualization/Type eq \'spsite\'';
 
@@ -17,21 +18,21 @@ module.exports = async (activity) => {
     activity.Response.Data.linkLabel = 'Go to Sharepoint';
     activity.Response.Data.items = [];
 
-    if (!response.body.data.value || !response.body.data.value.length) return;
+    if (!response.body.value || !response.body.value.length) return;
 
-    for (let i = 0; i < response.body.data.value.length; i++) {
-      activity.Response.Data.items.push(convertItem(response.body.data.value[i]));
+    for (let i = 0; i < response.body.value.length; i++) {
+      const raw = response.body.value[i];
+
+      activity.Response.Data.items.push({
+        id: raw.id,
+        title: raw.resourceVisualization.title,
+        description: raw.resourceVisualization.containerType,
+        link: raw.resourceReference.webUrl,
+        thumbnail: $.avatarLink(helpers.stripSpecialChars(raw.resourceVisualization.title),
+        imageIsAvatar: true
+      });
     }
   } catch (error) {
     $.handleError(activity, error);
   }
 };
-
-function convertItem(raw) {
-  return {
-    id: raw.id,
-    title: raw.resourceVisualization.title,
-    description: raw.resourceVisualization.containerType,
-    link: raw.resourceReference.webUrl
-  };
-}
