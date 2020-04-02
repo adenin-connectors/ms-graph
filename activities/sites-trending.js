@@ -23,15 +23,22 @@ module.exports = async (activity) => {
     for (let i = 0; i < response.body.value.length; i++) {
       const raw = response.body.value[i];
 
+      // for Cisco and v1 cases we need to make the avatar app.adenin.com always.
+      const plainTitle = helpers.stripSpecialChars(raw.resourceVisualization.title);
+      const rawAvatar = $.avatarLink(plainTitle);
+      const avatar = 'https://app.adenin.com/avatar' + rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length);
+
       activity.Response.Data.items.push({
         id: raw.id,
         title: raw.resourceVisualization.title,
         description: raw.resourceVisualization.containerType,
         link: raw.resourceReference.webUrl,
-        thumbnail: $.avatarLink(helpers.stripSpecialChars(raw.resourceVisualization.title)),
+        thumbnail: avatar,
         imageIsAvatar: true
       });
     }
+
+    activity.Response.Data.items.pop();
   } catch (error) {
     $.handleError(activity, error);
   }
