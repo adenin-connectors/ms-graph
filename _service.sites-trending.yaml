@@ -1,0 +1,3 @@
+ServiceName: 'sites-trending'
+InterfaceName: 'items'
+Description: 'Trending Sites'
