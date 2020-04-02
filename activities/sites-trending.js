@@ -28,7 +28,7 @@ module.exports = async (activity) => {
         title: raw.resourceVisualization.title,
         description: raw.resourceVisualization.containerType,
         link: raw.resourceReference.webUrl,
-        thumbnail: $.avatarLink(helpers.stripSpecialChars(raw.resourceVisualization.title),
+        thumbnail: $.avatarLink(helpers.stripSpecialChars(raw.resourceVisualization.title)),
         imageIsAvatar: true
       });
     }
