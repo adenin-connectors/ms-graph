@@ -11,7 +11,7 @@ properties:
     xtype: lookup
     name: attendees
     maxItems: !!int 19
-    url: /api/adenin.GateKeeper.Connector/MSGraph/people
+    url: /api/adenin.GateKeeper.Connector/ms-graph/people-search
     required: !!bool true
   daterange:
     type: daterange
