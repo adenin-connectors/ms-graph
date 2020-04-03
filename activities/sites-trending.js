@@ -26,7 +26,7 @@ module.exports = async (activity) => {
       // for Cisco and v1 cases we need to make the avatar app.adenin.com always.
       const plainTitle = helpers.stripSpecialChars(raw.resourceVisualization.title);
       const rawAvatar = $.avatarLink(plainTitle);
-      const avatar = 'https://app.adenin.com/avatar' + rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length);
+      const avatar = `https://app.adenin.com/avatar${rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length)}?color=1e4471&size=48&fontSize=64`;
 
       activity.Response.Data.items.push({
         id: raw.id,
@@ -36,14 +36,6 @@ module.exports = async (activity) => {
         thumbnail: avatar,
         imageIsAvatar: true
       });
-    }
-
-    const remainder = 3 - (activity.Response.Data.items.length % 3);
-
-    activity.Response.Data._remainders = [];
-
-    for (let i = 1; i <= remainder; i++) {
-      activity.Response.Data._remainders.push({});
     }
   } catch (error) {
     $.handleError(activity, error);
