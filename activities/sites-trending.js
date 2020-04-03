@@ -13,10 +13,13 @@ module.exports = async (activity) => {
 
     if ($.isErrorResponse(activity, response)) return;
 
-    activity.Response.Data.title = 'Trending Sites';
-    activity.Response.Data.link = 'https://office.com/launch/sharepoint';
-    activity.Response.Data.linkLabel = 'Go to Sharepoint';
-    activity.Response.Data.items = [];
+    activity.Response.Data = {
+      title: 'Trending Sites',
+      link: 'https://office.com/launch/sharepoint',
+      linkLabel: 'Go to Sharepoint',
+      items: [],
+      _remainders: []
+    };
 
     if (!response.body.value || !response.body.value.length) return;
 
@@ -26,7 +29,7 @@ module.exports = async (activity) => {
       // for Cisco and v1 cases we need to make the avatar app.adenin.com always.
       const plainTitle = helpers.stripSpecialChars(raw.resourceVisualization.title);
       const rawAvatar = $.avatarLink(plainTitle);
-      const avatar = 'https://app.adenin.com/avatar' + rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length);
+      const avatar = `https://app.adenin.com/avatar${rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length)}?size=48&fontSize=56`;
 
       activity.Response.Data.items.push({
         id: raw.id,
@@ -39,8 +42,6 @@ module.exports = async (activity) => {
     }
 
     const remainder = 3 - (activity.Response.Data.items.length % 3);
-
-    activity.Response.Data._remainders = [];
 
     for (let i = 1; i <= remainder; i++) {
       activity.Response.Data._remainders.push({});
