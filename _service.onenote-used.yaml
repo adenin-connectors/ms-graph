@@ -1,3 +1,4 @@
 ServiceName: 'onenote-used'
 InterfaceName: 'items'
 Description: 'Recent OneNote documents'
+Interfaces: 'pagination'

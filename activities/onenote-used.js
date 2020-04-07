@@ -24,7 +24,7 @@ module.exports = async (activity) => {
 
     const count = items.length;
 
-    activity.Response.Data = {
+    activity.Response.Data = Object.assign(activity.Response.Data, {
       title: T(activity, 'Recent Notebooks'),
       link: 'https://office.com/launch/onenote',
       linkLabel: 'Go to OneNote',
@@ -32,7 +32,7 @@ module.exports = async (activity) => {
       value: count,
       actionable: count > 0,
       items: items.sort($.compare.dateDescending)
-    };
+    });
 
     if (parseInt(pages.page) === 1 && count > 0) {
       const first = items[0];
