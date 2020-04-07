@@ -32,13 +32,9 @@ module.exports = async (activity) => {
       // for Cisco and v1 cases we need to make the avatar app.adenin.com always.
       const plainTitle = helpers.stripSpecialChars(raw.resourceVisualization.title);
       const rawAvatar = $.avatarLink(plainTitle);
-<<<<<<< HEAD
       const avatar = `https://app.adenin.com/avatar${rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length)}?color=1e4471&size=52&fontSize=64`;
-=======
-      const avatar = `https://app.adenin.com/avatar${rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length)}?size=48&fontSize=56`;
 
       const id = raw.resourceReference.id.replace('sites/', '');
->>>>>>> master
 
       map.set(id, {
         id: id,
@@ -51,8 +47,6 @@ module.exports = async (activity) => {
 
       promises.push(api(`/v1.0/sites/${id}`));
     }
-<<<<<<< HEAD
-=======
 
     const results = await Promise.all(promises);
     const items = [];
@@ -76,7 +70,6 @@ module.exports = async (activity) => {
     for (let i = 1; i <= remainder; i++) {
       activity.Response.Data._remainders.push(i);
     }
->>>>>>> master
   } catch (error) {
     $.handleError(activity, error);
   }
