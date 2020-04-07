@@ -17,7 +17,7 @@ module.exports = {
     return {
       id: raw.id,
       title: raw.resourceVisualization.title,
-      description: raw.resourceVisualization.previewText,
+      description: this.stripNonAscii(raw.resourceVisualization.previewText),
       type: raw.resourceVisualization.type || raw.resourceVisualization.containerType,
       link: raw.resourceReference.webUrl,
       containerTitle: this.stripSpecialChars(raw.resourceVisualization.containerDisplayName),
