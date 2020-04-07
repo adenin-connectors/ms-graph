@@ -226,7 +226,7 @@ module.exports = async (activity) => {
         var schema = yaml.safeLoad(fs.readFileSync(fname, 'utf8'));
 
         // provide lookup url for attendees 
-        schema.properties.attendees.url = activity.Context.connector.baseurl + "/people";
+        schema.properties.attendees.url = activity.Context.connector.baseurl + "/people-search";
 
         return schema;
     }
