@@ -32,7 +32,7 @@ module.exports = async (activity) => {
       // for Cisco and v1 cases we need to make the avatar app.adenin.com always.
       const plainTitle = helpers.stripSpecialChars(raw.resourceVisualization.title);
       const rawAvatar = $.avatarLink(plainTitle);
-      const avatar = `https://app.adenin.com/avatar${rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length)}?size=48&fontSize=56`;
+      const avatar = `https://app.adenin.com/avatar${rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length)}?color=1e4471&size=52&fontSize=64`;
 
       const id = raw.resourceReference.id.replace('sites/', '');
 
