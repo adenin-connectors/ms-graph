@@ -17,8 +17,7 @@ module.exports = async (activity) => {
       title: 'Trending Sites',
       link: 'https://office.com/launch/sharepoint',
       linkLabel: 'Go to Sharepoint',
-      items: [],
-      _remainders: []
+      items: []
     };
 
     if (!response.body.value || !response.body.value.length) return;
@@ -64,12 +63,6 @@ module.exports = async (activity) => {
     }
 
     activity.Response.Data.items = items.sort($.compare.dateDescending);
-
-    const remainder = 3 - (activity.Response.Data.items.length % 3);
-
-    for (let i = 1; i <= remainder; i++) {
-      activity.Response.Data._remainders.push(i);
-    }
   } catch (error) {
     $.handleError(activity, error);
   }
