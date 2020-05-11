@@ -49,8 +49,9 @@ module.exports = async (activity) => {
     const pagination = $.pagination(activity);
     const paginatedItems = api.paginateItems(items, pagination);
 
+    activity.Response.Data.date = now.startOf('day').format();
     activity.Response.Data.items = paginatedItems;
-    activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(paginatedItems)).digest('hex');
+    activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(activity.Response.Data)).digest('hex');
 
     const value = paginatedItems.length - pastCount;
 
@@ -73,7 +74,6 @@ module.exports = async (activity) => {
 
         activity.Response.Data.briefing = activity.Response.Data.description + ` The next is '${first.title}' at ${moment(first.date).format('LT')}`;
       } else {
-        activity.Response.Data.date = now.startOf('day').format();
         activity.Response.Data.description = T(activity, 'You have no events today.');
       }
     }
