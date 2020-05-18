@@ -49,7 +49,7 @@ module.exports = async (activity) => {
     const pagination = $.pagination(activity);
     const paginatedItems = api.paginateItems(items, pagination);
 
-    activity.Response.Data.date = now.startOf('day').format();
+    activity.Response.Data.date = now.format();
     activity.Response.Data.items = paginatedItems;
     activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(activity.Response.Data)).digest('hex');
 
