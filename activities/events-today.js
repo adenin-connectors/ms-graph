@@ -72,7 +72,7 @@ module.exports = async (activity) => {
         activity.Response.Data.date = first.date;
         activity.Response.Data.description = value > 1 ? `You have ${value} events today.` : 'You have 1 event today.';
 
-        activity.Response.Data.briefing = activity.Response.Data.description + ` The next is '${first.title}' at ${moment(first.date).format('LT')}`;
+        activity.Response.Data.briefing = activity.Response.Data.description + ` The next is '${first.title}' at ${moment(first.date).utc().format('LT')}`;
       } else {
         activity.Response.Data.description = T(activity, 'You have no events today.');
       }
