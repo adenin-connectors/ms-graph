@@ -53,22 +53,22 @@ module.exports = async (activity) => {
     activity.Response.Data.items = paginatedItems;
     activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(activity.Response.Data)).digest('hex');
 
-    const value = paginatedItems.length - pastCount;
+    const value = paginatedItems.length - pastCount - allDayCount;
 
     if (parseInt(pagination.page) === 1) {
       activity.Response.Data.title = T(activity, 'Events Today');
       activity.Response.Data.link = 'https://outlook.office365.com/mail/inbox';
       activity.Response.Data.linkLabel = T(activity, 'All events');
       activity.Response.Data.thumbnail = 'https://www.adenin.com/assets/images/wp-images/logo/office-365.svg';
-      activity.Response.Data.actionable = value > 0;
       activity.Response.Data.integration = 'Outlook';
       activity.Response.Data.pastCount = pastCount;
       activity.Response.Data.allDayCount = allDayCount;
+      activity.Response.Data.value = value;
+      activity.Response.Data.actionable = value > 0;
 
       if (value > 0) {
         const first = paginatedItems[pastCount + allDayCount];
 
-        activity.Response.Data.value = value;
         activity.Response.Data.date = first.date;
         activity.Response.Data.description = value > 1 ? `You have ${value} events today.` : 'You have 1 event today.';
 
