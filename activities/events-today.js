@@ -66,7 +66,7 @@ module.exports = async (activity) => {
       activity.Response.Data.allDayCount = allDayCount;
 
       if (value > 0) {
-        const first = paginatedItems[pastCount];
+        const first = paginatedItems[pastCount + allDayCount];
 
         activity.Response.Data.value = value;
         activity.Response.Data.date = first.date;
