@@ -53,7 +53,7 @@ module.exports = async (activity) => {
     activity.Response.Data.items = paginatedItems;
     activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(activity.Response.Data)).digest('hex');
 
-    const value = paginatedItems.length - pastCount - allDayCount;
+    const value = paginatedItems.length - pastCount;
 
     if (parseInt(pagination.page) === 1) {
       activity.Response.Data.title = T(activity, 'Events Today');
@@ -67,12 +67,24 @@ module.exports = async (activity) => {
       activity.Response.Data.actionable = value > 0;
 
       if (value > 0) {
-        const first = paginatedItems[pastCount + allDayCount];
+        let first;
+        if (value > allDayCount) {
+          // if there's other events than 'all day' ones, they get preference in the notification
+          first = paginatedItems[pastCount + allDayCount];
+        } else {
+          // else the first all day event goes into the notification
+          first = paginatedItems[pastCount];
+        }
 
         activity.Response.Data.date = first.date;
         activity.Response.Data.description = value > 1 ? `You have ${value} events today.` : 'You have 1 event today.';
+        activity.Response.Data.briefing = activity.Response.Data.description;
 
-        activity.Response.Data.briefing = activity.Response.Data.description + ` The next is '${first.title}' at ${moment(first.date).utc().format('LT')}`;
+        if (value > allDayCount) {
+          activity.Response.Data.briefing += ` The next is '${first.title}' at ${moment(first.date).utc().format('LT')}`;
+        } else {
+          activity.Response.Data.briefing += ` The first is '${first.title}' which lasts all day`;
+        }
       } else {
         activity.Response.Data.description = T(activity, 'You have no events today.');
       }
