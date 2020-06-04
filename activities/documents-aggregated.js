@@ -76,17 +76,17 @@ module.exports = async (activity) => {
     activity.Response.Data.items = items;
 
     if (parseInt(pagination.page) === 1) {
-      activity.Response.Data.items[0]._isInitial = true;
-
       const count = items.length;
-      const first = items[0];
 
-      activity.Response.Data.link = first.containerLink;
+      activity.Response.Data.link = 'https://office.com/launch/onedrive';
       activity.Response.Data.linkLabel = T(activity, 'Go to OneDrive');
       activity.Response.Data.thumbnail = activity.Context.connector.host.connectorLogoUrl;
       activity.Response.Data.actionable = count > 0;
 
       if (count > 0) {
+        const first = items[0];
+
+        activity.Response.Data.items[0]._isInitial = true;
         activity.Response.Data.value = count;
         activity.Response.Data.date = first.date;
         activity.Response.Data.description = count > 1 ? `You have ${count} new cloud files.` : 'You have 1 new cloud file.';
@@ -119,6 +119,7 @@ function convertItem(raw) {
   if (raw.lastShared) {
     item.sharedBy = helpers.stripSpecialChars(raw.lastShared.sharedBy.displayName);
     item.sharedDate = new Date(raw.lastShared.sharedDateTime);
+    item.date = item.sharedDate;
     item.description = raw.lastShared.sharingSubject;
     item.link = raw.lastShared.sharingReference.webUrl;
   }
@@ -132,8 +133,16 @@ function convertItem(raw) {
     const lastOpened = new Date(raw.lastUsed.lastAccessedDateTime);
     const lastModified = new Date(raw.lastUsed.lastModifiedDateTime);
 
-    if (lastOpened > twentyFourHoursAgo) item.lastOpened = lastOpened;
-    if (lastModified > twoDaysAgo) item.lastModified = lastModified;
+    if (lastOpened > twentyFourHoursAgo) {
+      item.lastOpened = lastOpened;
+    }
+
+    if (lastModified > twoDaysAgo) {
+      item.lastModified = lastModified;
+    }
+
+    if (!item.date) item.date = lastOpened;
+    if (!item.date) item.date = lastModified;
   }
 
   return item;
