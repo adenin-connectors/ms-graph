@@ -11,14 +11,14 @@
     "@adenin/cf-provider": "^2.8.10",
     "agentkeepalive": "^4.1.2",
     "got": "^9.6.0",
-    "js-yaml": "^3.12.2",
-    "moment": "^2.25.3",
-    "moment-timezone": "^0.5.28"
+    "js-yaml": "^3.14.0",
+    "moment": "^2.26.0",
+    "moment-timezone": "^0.5.31"
   },
   "devDependencies": {
     "@adenin/cf-logger": "^1.7.1",
     "decache": "^4.6.0",
-    "koa": "^2.11.0",
+    "koa": "^2.12.0",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^7.4.0",
     "nodemon": "^2.0.4"
