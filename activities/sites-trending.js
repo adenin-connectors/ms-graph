@@ -17,8 +17,7 @@ module.exports = async (activity) => {
       title: 'Trending Sites',
       link: 'https://office.com/launch/sharepoint',
       linkLabel: 'Go to Sharepoint',
-      items: [],
-      _remainders: []
+      items: []
     };
 
     if (!response.body.value || !response.body.value.length) return;
@@ -32,7 +31,7 @@ module.exports = async (activity) => {
       // for Cisco and v1 cases we need to make the avatar app.adenin.com always.
       const plainTitle = helpers.stripSpecialChars(raw.resourceVisualization.title);
       const rawAvatar = $.avatarLink(plainTitle);
-      const avatar = `https://app.adenin.com/avatar${rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length)}?size=48&fontSize=56`;
+      const avatar = `https://app.adenin.com/avatar${rawAvatar.substring(rawAvatar.lastIndexOf('/'), rawAvatar.length)}?color=1e4471&size=52&fontSize=64`;
 
       const id = raw.resourceReference.id.replace('sites/', '');
 
@@ -64,12 +63,6 @@ module.exports = async (activity) => {
     }
 
     activity.Response.Data.items = items.sort($.compare.dateDescending);
-
-    const remainder = 3 - (activity.Response.Data.items.length % 3);
-
-    for (let i = 1; i <= remainder; i++) {
-      activity.Response.Data._remainders.push(i);
-    }
   } catch (error) {
     $.handleError(activity, error);
   }
