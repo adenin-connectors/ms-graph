@@ -81,7 +81,7 @@ module.exports = async (activity) => {
         activity.Response.Data.briefing = activity.Response.Data.description;
 
         if (value > allDayCount) {
-          activity.Response.Data.briefing += ` The next is '${first.title}' at ${moment(first.date).utc().format('LT')}`;
+          activity.Response.Data.briefing += ` The next is '${first.title}' at ${moment(first.date).format('LT')}`;
         } else {
           activity.Response.Data.briefing += ` The first is '${first.title}' which lasts all day`;
         }
