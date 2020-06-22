@@ -67,7 +67,7 @@ function convertResponse(tasks) {
     let raw = tasks[i];
     let item = {
       id: raw.id,
-      name: raw.subject,
+      title: raw.subject,
       description: raw.importance,
       date: raw.createdDateTime,
       link: 'https://to-do.office.com/tasks/',
