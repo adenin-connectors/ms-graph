@@ -17,7 +17,10 @@ module.exports = async (activity) => {
       title: 'Trending Sites',
       link: 'https://office.com/launch/sharepoint',
       linkLabel: 'Go to Sharepoint',
-      items: []
+      items: [],
+      _card: {
+        type: 'sharepoint-sites'
+      }
     };
 
     if (!response.body.value || !response.body.value.length) return;

@@ -74,6 +74,9 @@ module.exports = async (activity) => {
 
     activity.Response.Data.title = T(activity, 'Cloud Files');
     activity.Response.Data.items = items;
+    activity.Response.Data._card = {
+      type: 'cloud-files-tabbed'
+    };
 
     if (parseInt(pagination.page) === 1) {
       const count = items.length;

@@ -52,6 +52,9 @@ module.exports = async (activity) => {
     activity.Response.Data.date = moment().startOf('day').format();
     activity.Response.Data.items = paginatedItems;
     activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(activity.Response.Data)).digest('hex');
+    activity.Response.Data._card = {
+      type: 'events-today'
+    };
 
     const value = paginatedItems.length - pastCount;
 

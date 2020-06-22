@@ -31,7 +31,10 @@ module.exports = async (activity) => {
       thumbnail: activity.Context.connector.host.connectorLogoUrl,
       value: count,
       actionable: count > 0,
-      items: items.sort($.compare.dateDescending)
+      items: items.sort($.compare.dateDescending),
+      _card: {
+        type: 'cloud-files'
+      }
     });
 
     if (parseInt(pages.page) === 1 && count > 0) {
