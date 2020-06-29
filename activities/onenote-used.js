@@ -1,9 +1,6 @@
 'use strict';
 
 const api = require('./common/api');
-const helpers = require('./common/helpers');
-
-const onlyOneNote = 'ResourceVisualization/Type eq \'OneNote\'';
 
 module.exports = async (activity) => {
   try {
@@ -15,29 +12,38 @@ module.exports = async (activity) => {
 
     api.initialize(activity);
 
-    const response = await api(`/v1.0/me/insights/used?$top=${top}&$skip=${skip}&$filter=${onlyOneNote}`);
+    const response = await api(`/v1.0/me/onenote/notebooks?$top=${top}&$skip=${skip}`);
     const items = [];
 
     for (let i = 0; i < response.body.value.length; i++) {
-      items.push(helpers.convertInsightsItem(response.body.value[i]));
+      const raw = response.body.value[i];
+
+      items.push({
+        id: raw.id,
+        title: raw.displayName,
+        type: 'OneNote',
+        date: raw.lastModifiedDateTime,
+        lastModified: raw.lastModifiedDateTime,
+        link: raw.links.oneNoteWebUrl.href,
+        hideType: true
+      });
     }
 
     const count = items.length;
 
     activity.Response.Data = Object.assign(activity.Response.Data, {
-      title: T(activity, 'Recent Notebooks'),
+      title: T(activity, 'My Recent Notebooks'),
       link: 'https://office.com/launch/onenote',
       linkLabel: 'Go to OneNote',
       thumbnail: activity.Context.connector.host.connectorLogoUrl,
       value: count,
       actionable: count > 0,
-      items: items.sort($.compare.dateDescending),
-      _card: {
-        type: 'cloud-files'
-      }
+      items: items.sort($.compare.dateDescending)
     });
 
     if (parseInt(pages.page) === 1 && count > 0) {
+      activity.Response.Data.items[0]._isInitial = true;
+
       const first = items[0];
 
       activity.Response.Data.date = first.date;
