@@ -49,8 +49,12 @@ module.exports = async (activity) => {
     const pagination = $.pagination(activity);
     const paginatedItems = api.paginateItems(items, pagination);
 
+    activity.Response.Data.date = moment().startOf('day').format();
     activity.Response.Data.items = paginatedItems;
-    activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(paginatedItems)).digest('hex');
+    activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(activity.Response.Data)).digest('hex');
+    activity.Response.Data._card = {
+      type: 'events-today'
+    };
 
     const value = paginatedItems.length - pastCount;
 
@@ -59,21 +63,31 @@ module.exports = async (activity) => {
       activity.Response.Data.link = 'https://outlook.office365.com/mail/inbox';
       activity.Response.Data.linkLabel = T(activity, 'All events');
       activity.Response.Data.thumbnail = 'https://www.adenin.com/assets/images/wp-images/logo/office-365.svg';
-      activity.Response.Data.actionable = value > 0;
       activity.Response.Data.integration = 'Outlook';
       activity.Response.Data.pastCount = pastCount;
       activity.Response.Data.allDayCount = allDayCount;
+      activity.Response.Data.value = value;
+      activity.Response.Data.actionable = value > 0;
 
       if (value > 0) {
-        const first = paginatedItems[pastCount];
+        let first;
+        if (value > allDayCount) {
+          // if there's other events than 'all day' ones, they get preference in the notification
+          first = paginatedItems[pastCount + allDayCount];
+        } else {
+          // else the first all day event goes into the notification
+          first = paginatedItems[pastCount];
+        }
 
-        activity.Response.Data.value = value;
-        activity.Response.Data.date = first.date;
         activity.Response.Data.description = value > 1 ? `You have ${value} events today.` : 'You have 1 event today.';
+        activity.Response.Data.briefing = activity.Response.Data.description;
 
-        activity.Response.Data.briefing = activity.Response.Data.description + ` The next is '${first.title}' at ${moment(first.date).format('LT')}`;
+        if (value > allDayCount) {
+          activity.Response.Data.briefing += ` The next is '${first.title}' at ${moment(first.date).format('LT')}`;
+        } else {
+          activity.Response.Data.briefing += ` The first is '${first.title}' which lasts all day`;
+        }
       } else {
-        activity.Response.Data.date = now.startOf('day').format();
         activity.Response.Data.description = T(activity, 'You have no events today.');
       }
     }
@@ -93,8 +107,8 @@ module.exports = async (activity) => {
     item.description = raw.bodyPreview.replace(/\r/g, '');
     item.description = item.description.replace(/\n/g, '<br/>');
 
-    item.date = moment.tz(raw.start.dateTime, raw.start.timeZone).tz(activity.Context.UserTimezone).format();
-    item.endDate = moment.tz(raw.end.dateTime, raw.end.timeZone).tz(activity.Context.UserTimezone).format();
+    item.date = moment.tz(raw.start.dateTime, raw.start.timeZone).utc().format();
+    item.endDate = moment.tz(raw.end.dateTime, raw.end.timeZone).utc().format();
 
     const duration = moment.duration(moment(raw.end.dateTime).diff(moment(raw.start.dateTime)));
 
