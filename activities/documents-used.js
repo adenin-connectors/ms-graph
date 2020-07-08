@@ -15,7 +15,7 @@ module.exports = async (activity) => {
 
     api.initialize(activity);
 
-    const response = await api(`/beta/me/insights/used?$skip=${skip}&$top=${top}`);
+    const response = await api(`/v1.0/me/insights/used?$skip=${skip}&$top=${top}`);
 
     if ($.isErrorResponse(activity, response)) return;
 
