@@ -79,7 +79,6 @@ module.exports = async (activity) => {
           first = paginatedItems[pastCount];
         }
 
-        activity.Response.Data.date = first.date;
         activity.Response.Data.description = value > 1 ? `You have ${value} events today.` : 'You have 1 event today.';
         activity.Response.Data.briefing = activity.Response.Data.description;
 
