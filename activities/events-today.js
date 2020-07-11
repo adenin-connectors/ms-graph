@@ -48,8 +48,7 @@ module.exports = async (activity) => {
 
     const pagination = $.pagination(activity);
     const paginatedItems = api.paginateItems(items, pagination);
-
-    activity.Response.Data.date = moment().startOf('day').format();
+    
     activity.Response.Data.items = paginatedItems;
     activity.Response.Data._hash = crypto.createHash('md5').update(JSON.stringify(activity.Response.Data)).digest('hex');
     activity.Response.Data._card = {
@@ -70,6 +69,7 @@ module.exports = async (activity) => {
       activity.Response.Data.actionable = value > 0;
 
       if (value > 0) {
+        activity.Response.Data.date = moment().startOf('day').format();
         let first;
         if (value > allDayCount) {
           // if there's other events than 'all day' ones, they get preference in the notification
