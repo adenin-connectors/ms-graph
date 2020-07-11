@@ -36,8 +36,7 @@ module.exports = async (activity) => {
       link: 'https://office.com/launch/onenote',
       linkLabel: 'Go to OneNote',
       thumbnail: activity.Context.connector.host.connectorLogoUrl,
-      value: count,
-      actionable: count > 0,
+      value: count,      
       items: items.sort($.compare.dateDescending)
     });
 
