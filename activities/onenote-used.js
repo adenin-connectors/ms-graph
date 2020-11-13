@@ -36,8 +36,11 @@ module.exports = async (activity) => {
       link: 'https://office.com/launch/onenote',
       linkLabel: 'Go to OneNote',
       thumbnail: activity.Context.connector.host.connectorLogoUrl,
-      value: count,      
-      items: items.sort($.compare.dateDescending)
+      value: count,
+      items: items.sort($.compare.dateDescending),
+      _card: {
+        type: 'cloud-files'
+      }
     });
 
     if (parseInt(pages.page) === 1 && count > 0) {
